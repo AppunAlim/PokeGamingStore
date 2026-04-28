@@ -18,6 +18,7 @@ while (running)
 			BuatPesanan(service);
 			break;
 		case "2":
+			UbahStatusPesanan(service);
 			break;
 		case "3":
 			break;
@@ -63,5 +64,37 @@ static void BuatPesanan(ITransactionService service)
 	catch (Exception ex)
 	{
 		Console.WriteLine($"Gagal buat transaksi: {ex.Message}");
+	}
+}
+
+static void UbahStatusPesanan(ITransactionService service)
+{
+	Console.Write("ID pesanan: ");
+	var orderIdText = Console.ReadLine();
+
+	if (!Guid.TryParse(orderIdText, out var orderId))
+	{
+		Console.WriteLine("ID pesanan tidak valid.");
+		return;
+	}
+
+	Console.WriteLine("Event: Bayar, Kemas, Kirim, Antar, Batal");
+	Console.Write("Pilih event: ");
+	var eventText = Console.ReadLine();
+
+	if (!Enum.TryParse<EventPesanan>(eventText, ignoreCase: true, out var orderEvent))
+	{
+		Console.WriteLine("Event tidak valid.");
+		return;
+	}
+
+	try
+	{
+		var order = service.TerapkanEvent(orderId, orderEvent);
+		Console.WriteLine($"Status baru: {order.Status}");
+	}
+	catch (Exception ex)
+	{
+		Console.WriteLine($"Gagal ubah status: {ex.Message}");
 	}
 }
