@@ -1,0 +1,51 @@
+# Visual Studio, VS Code, Rider
+.vs/
+.vscode/
+.idea/
+
+# Build outputs
+bin/
+obj/
+Debug/
+Release/
+
+# Publish outputs
+publish/
+
+# Dotnet artifacts
+*.runtimeconfig.json
+*.deps.json
+*.dll
+*.exe
+*.pdb
+*.log
+
+# NuGet
+*.nupkg
+packages/
+project.lock.json
+
+# Test results
+TestResults/
+*.trx
+*.coverage
+
+# Generated files
+*.g.cs
+*.g.i.cs
+Generated/
+ref/
+refint/
+
+# User-specific files
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+
+# Misc
+*.vsix
+*.nupkg.metadata
+
+# Agents
+.agents/
