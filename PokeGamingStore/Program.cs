@@ -21,6 +21,7 @@ while (running)
 			UbahStatusPesanan(service);
 			break;
 		case "3":
+			TampilkanPesanan(service);
 			break;
 		case "0":
 			running = false;
@@ -40,7 +41,6 @@ static void ShowMenu()
 	Console.WriteLine("3. Lihat semua pesanan");
 	Console.WriteLine("0. Keluar");
 }
-
 
 static void BuatPesanan(ITransactionService service)
 {
@@ -96,5 +96,22 @@ static void UbahStatusPesanan(ITransactionService service)
 	catch (Exception ex)
 	{
 		Console.WriteLine($"Gagal ubah status: {ex.Message}");
+	}
+}
+
+static void TampilkanPesanan(ITransactionService service)
+{
+	var orders = service.AmbilSemua();
+
+	if (orders.Count == 0)
+	{
+		Console.WriteLine("Belum ada transaksi.");
+		return;
+	}
+
+	foreach (var order in orders)
+	{
+		Console.WriteLine(
+			$"ID pesanan: {order.Id} | Pelanggan: {order.CustomerId} | Jumlah: {order.Amount} | Status: {order.Status}");
 	}
 }
