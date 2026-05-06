@@ -7,53 +7,48 @@ namespace PokeGamingStore
     internal class StockManager
     {
         private Dictionary<string, int> stocks = new Dictionary<string, int>();
+        private List<Item> catalog = new List<Item>();
 
-        public void AddStock(string itemId, int quantity)
+        public void AddCatalogItem(Item item, int quantity)
         {
-            if (string.IsNullOrEmpty(itemId))
+            if (item == null)
             {
-                throw new ArgumentNullException("Id item tidak boleh kosong.");
+                throw new ArgumentNullException("Item tidak boleh kosong.");
             }
-            if (quantity <= 0)
-            {
-                throw new ArgumentException("Kuantitas tambah stok harus lebih dari 0.");
-            }
+            catalog.Add(item);
+            stocks.Add(item.Id, quantity);
+        }
 
-            if (stocks.ContainsKey(itemId))
-            {
-                stocks[itemId] += quantity;
-            }
-            else
-            {
-                stocks.Add(itemId, quantity);
-            }
+        public Item GetItem(string itemId)
+        {
+            return catalog.FirstOrDefault(i => i.Id == itemId);
         }
 
         public int GetStock(string itemId)
         {
-            if (string.IsNullOrEmpty(itemId))
-            {
-                throw new ArgumentNullException("Id item tidak boleh kosong.");
-            }
             return stocks.ContainsKey(itemId) ? stocks[itemId] : 0;
         }
 
         public void ReduceStock(string itemId, int quantity)
         {
-            if (string.IsNullOrEmpty(itemId))
-            {
-                throw new ArgumentNullException("Id item tidak boleh kosong.");
-            }
-            if (quantity <= 0)
-            {
-                throw new ArgumentException("Kuantitas pengurangan stok harus lebih dari 0.");
-            }
             if (GetStock(itemId) < quantity)
             {
-                throw new InvalidOperationException("Stok tidak mencukupi untuk dikurangi.");
+                throw new InvalidOperationException("Stok tidak mencukupi.");
             }
-
             stocks[itemId] -= quantity;
+        }
+
+        public void ReturnStock(string itemId, int quantity)
+        {
+            if (stocks.ContainsKey(itemId))
+            {
+                stocks[itemId] += quantity;
+            }
+        }
+
+        public List<Item> GetCatalog()
+        {
+            return catalog;
         }
     }
 }
