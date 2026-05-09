@@ -1,3 +1,4 @@
 <Solution>
+  <Project Path="PokeGamingStore.Tests/PokeGamingStore.Tests.csproj" />
   <Project Path="PokeGamingStore/PokeGamingStore.csproj" />
 </Solution>
