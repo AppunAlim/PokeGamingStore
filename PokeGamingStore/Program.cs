@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 
 var service = new TransactionService();
+IUserService userService = new UserService();
 var running = true;
 
 Console.WriteLine("PokeGamingStore - Sistem Gabungan");
@@ -27,7 +28,10 @@ while (running)
             TampilkanPesanan(service);
             break;
         case "4":
-            DemoKeranjangDanStok(service);
+            DemoKeranjangDanStok(service, userService);
+            break;
+        case "5":
+            MenuManajemenUser(userService);
             break;
         case "0":
             running = false;
@@ -46,10 +50,12 @@ static void ShowMenu()
     Console.WriteLine("2. Ubah status pesanan (automata)");
     Console.WriteLine("3. Lihat semua pesanan");
     Console.WriteLine("4. Menu Keranjang & Stok Barang");
+    Console.WriteLine("5. Menu Manajemen User & History");
     Console.WriteLine("0. Keluar");
 }
 
-static void DemoKeranjangDanStok(ITransactionService service)
+
+static void DemoKeranjangDanStok(ITransactionService service, IUserService userService)
 {
     ConfigLoader loader = new ConfigLoader();
     AppConfig config = loader.LoadConfig("config.json");
@@ -175,6 +181,9 @@ static void DemoKeranjangDanStok(ITransactionService service)
                 {
                     var order = service.BuatTransaksi(custId, totalBayar);
                     cart.ClearCart();
+
+                    userService.RecordPurchase(custId, order.Id.ToString(), totalBayar);
+                    
                     Console.WriteLine($"Checkout sukses. ID pesanan: {order.Id}, Total Bayar: Rp{totalBayar}");
                 }
                 catch (Exception ex)
@@ -264,5 +273,50 @@ static void TampilkanPesanan(ITransactionService service)
     {
         Console.WriteLine(
             $"ID pesanan: {order.Id} | Pelanggan: {order.CustomerId} | Jumlah: {order.Amount} | Status: {order.Status}");
+    }
+}
+
+static void MenuManajemenUser(IUserService userService)
+{
+    bool subRunning = true;
+    while (subRunning)
+    {
+        Console.WriteLine("\n--- Sub-Menu: Manajemen User & History ---");
+        Console.WriteLine("1. Registrasi User");
+        Console.WriteLine("2. Daftar Semua User");
+        Console.WriteLine("3. Cek Riwayat Pembelian");
+        Console.WriteLine("0. Kembali");
+        Console.Write("Pilih: ");
+        var input = Console.ReadLine();
+
+        switch (input)
+        {
+            case "1":
+                Console.Write("Masukkan Username: ");
+                string name = Console.ReadLine();
+                Console.WriteLine("Pilih Role: 0 (Admin), 1 (Regular), 2 (Premium)");
+                if (Enum.TryParse<UserRole>(Console.ReadLine(), out var role))
+                {
+                    var res = userService.RegisterUser(name, role);
+                    Console.WriteLine($"[API Response] {res.Message} ID: {res.Data.Id}");
+                }
+                else { Console.WriteLine("Role tidak valid."); }
+                break;
+            case "2":
+                var users = userService.GetAllUsers();
+                Console.WriteLine($"\n[API Response] {users.Message}");
+                users.Data.ForEach(u => Console.WriteLine($"- [{u.Id}] {u.Username} (Role: {u.Role})"));
+                break;
+            case "3":
+                Console.Write("Masukkan ID User: ");
+                string id = Console.ReadLine();
+                var history = userService.GetPurchaseHistory(id);
+
+                Console.WriteLine($"\n[API Response] {history.Message}");
+                history.Data?.ForEach(h =>
+                    Console.WriteLine($"[{h.Timestamp}] Aksi: {h.Action} | OrderID: {h.Data.OrderId} | Total: Rp{h.Data.TotalAmount}"));
+                break;
+            case "0": subRunning = false; break;
+        }
     }
 }

@@ -1,8 +1,19 @@
 {
   "version": 2,
-  "dgSpecHash": "fXmDOsXuFWs=",
+  "dgSpecHash": "RThU07/JpZQ=",
   "success": true,
-  "projectFilePath": "C:\\AffanPunya\\Tugas Kuliah\\Semester 4\\Codingan\\C#\\PokeGamingStore\\PokeGamingStore\\PokeGamingStore.csproj",
-  "expectedPackageFiles": [],
+  "projectFilePath": "C:\\Users\\Fattan\\source\\repos\\PokeGamingStore\\PokeGamingStore\\PokeGamingStore.csproj",
+  "expectedPackageFiles": [
+    "C:\\Users\\Fattan\\.nuget\\packages\\microsoft.applicationinsights\\2.23.0\\microsoft.applicationinsights.2.23.0.nupkg.sha512",
+    "C:\\Users\\Fattan\\.nuget\\packages\\microsoft.testing.extensions.telemetry\\2.2.2\\microsoft.testing.extensions.telemetry.2.2.2.nupkg.sha512",
+    "C:\\Users\\Fattan\\.nuget\\packages\\microsoft.testing.extensions.trxreport.abstractions\\2.2.2\\microsoft.testing.extensions.trxreport.abstractions.2.2.2.nupkg.sha512",
+    "C:\\Users\\Fattan\\.nuget\\packages\\microsoft.testing.extensions.vstestbridge\\2.2.2\\microsoft.testing.extensions.vstestbridge.2.2.2.nupkg.sha512",
+    "C:\\Users\\Fattan\\.nuget\\packages\\microsoft.testing.platform\\2.2.2\\microsoft.testing.platform.2.2.2.nupkg.sha512",
+    "C:\\Users\\Fattan\\.nuget\\packages\\microsoft.testing.platform.msbuild\\2.2.2\\microsoft.testing.platform.msbuild.2.2.2.nupkg.sha512",
+    "C:\\Users\\Fattan\\.nuget\\packages\\microsoft.testplatform.objectmodel\\18.3.0\\microsoft.testplatform.objectmodel.18.3.0.nupkg.sha512",
+    "C:\\Users\\Fattan\\.nuget\\packages\\mstest.analyzers\\4.2.2\\mstest.analyzers.4.2.2.nupkg.sha512",
+    "C:\\Users\\Fattan\\.nuget\\packages\\mstest.testadapter\\4.2.2\\mstest.testadapter.4.2.2.nupkg.sha512",
+    "C:\\Users\\Fattan\\.nuget\\packages\\mstest.testframework\\4.2.2\\mstest.testframework.4.2.2.nupkg.sha512"
+  ],
   "logs": []
 }
