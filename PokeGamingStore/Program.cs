@@ -1,9 +1,6 @@
 ﻿using PokeGamingStore;
 using PokeGamingStore.Models;
 using PokeGamingStore.Services;
-
-// --- [DICABUT SEMENTARA] --- 
-// using PokeGamingStore.Services; 
 using System;
 using System.Collections.Generic;
 using System.Threading;
@@ -21,8 +18,8 @@ namespace PokeGamingStore
 
             var service = new TransactionService();
 
-            // --- [DICABUT SEMENTARA] --- 
-            // IUserService userService = new UserService();
+            // Fitur dari branch temanmu sekarang sudah aktif!
+            IUserService userService = new UserService();
 
             var running = true;
 
@@ -46,14 +43,12 @@ namespace PokeGamingStore
                         TampilkanPesanan(service);
                         break;
                     case "4":
-                        // --- [DICABUT SEMENTARA] --- 
-                        // DemoKeranjangDanStok(service, userService);
-                        DemoKeranjangDanStok(service); // Memanggil versi tanpa userService
+                        // Sekarang memasukkan userService lagi
+                        DemoKeranjangDanStok(service, userService);
                         break;
                     case "5":
-                        // --- [DICABUT SEMENTARA] --- 
-                        // MenuManajemenUser(userService);
-                        Console.WriteLine("Menu Manajemen User dinonaktifkan sementara menunggu push dari teman.");
+                        // Menu User sudah bisa dipakai
+                        MenuManajemenUser(userService);
                         break;
                     case "6":
                         var thread = new Thread(() =>
@@ -86,9 +81,7 @@ namespace PokeGamingStore
             Console.WriteLine("6. Buka GUI Katalog Produk");
             Console.WriteLine("0. Keluar");
         }
-
-        // --- [DICABUT SEMENTARA] --- Parameter IUserService userService dihapus dari sini
-        static void DemoKeranjangDanStok(ITransactionService service)
+        static void DemoKeranjangDanStok(ITransactionService service, IUserService userService)
         {
             ConfigLoader loader = new ConfigLoader();
             AppConfig config = loader.LoadConfig("config.json");
@@ -215,8 +208,8 @@ namespace PokeGamingStore
                             var order = service.BuatTransaksi(custId, totalBayar);
                             cart.ClearCart();
 
-                            // --- [DICABUT SEMENTARA] --- 
-                            // userService.RecordPurchase(custId, order.Id.ToString(), totalBayar);
+                            // Fungsi ini sudah diaktifkan kembali
+                            userService.RecordPurchase(custId, order.Id.ToString(), totalBayar);
 
                             Console.WriteLine($"Checkout sukses. ID pesanan: {order.Id}, Total Bayar: Rp{totalBayar}");
                         }
@@ -310,9 +303,7 @@ namespace PokeGamingStore
             }
         }
 
-        // --- [DICABUT SEMENTARA] --- 
-        // Seluruh fungsi MenuManajemenUser di-comment dulu
-        /*
+        // Fitur temanmu dipindahkan ke dalam class Program
         static void MenuManajemenUser(IUserService userService)
         {
             bool subRunning = true;
@@ -342,7 +333,7 @@ namespace PokeGamingStore
                     case "2":
                         var users = userService.GetAllUsers();
                         Console.WriteLine($"\n[API Response] {users.Message}");
-                        users.Data.ForEach(u => Console.WriteLine($"- [{u.Id}] {u.Username} (Role: {u.Role})"));
+                        users.Data?.ForEach(u => Console.WriteLine($"- [{u.Id}] {u.Username} (Role: {u.Role})"));
                         break;
                     case "3":
                         Console.Write("Masukkan ID User: ");
@@ -357,6 +348,5 @@ namespace PokeGamingStore
                 }
             }
         }
-        */
     }
 }
