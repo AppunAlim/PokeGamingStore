@@ -1,5 +1,4 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
-using PokeGamingStore.catalog;
 using PokeGamingStore.Catalog;
 using System;
 
@@ -13,7 +12,7 @@ namespace PokeGamingStore.Tests
         [TestInitialize]
         public void Setup()
         {
-            catalog = new ProductCatalog<Product>();
+            catalog = ProductCatalog<Product>.Instance;
         }
 
         [TestMethod]
@@ -23,7 +22,7 @@ namespace PokeGamingStore.Tests
 
             catalog.AddProduct(product);
 
-            Assert.AreEqual(1, catalog.GetTotalProducts());
+            Assert.AreEqual(1, catalog.GetAllProducts().Count);
         }
 
         [TestMethod]

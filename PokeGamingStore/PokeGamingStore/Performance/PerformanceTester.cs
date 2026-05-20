@@ -1,5 +1,4 @@
-﻿using PokeGamingStore.catalog;
-using PokeGamingStore.Catalog;
+﻿using PokeGamingStore.Catalog;
 using System;
 using System.Diagnostics;
 
@@ -9,7 +8,7 @@ namespace PokeGamingStore.Performance
     {
         public static void RunTest()
         {
-            var catalog = new ProductCatalog<Product>();
+            var catalog = ProductCatalog<Product>.Instance;
             Console.WriteLine("Memasukkan 100.000 data produk untuk Performance Testing...");
 
             for (int i = 0; i < 100000; i++)
