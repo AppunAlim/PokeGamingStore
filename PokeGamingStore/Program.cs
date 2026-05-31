@@ -59,6 +59,15 @@ namespace PokeGamingStore
                         thread.Start();
                         thread.Join();
                         break;
+                    case "7":
+                        var thread1 = new Thread(() =>
+                        {
+                            Application.Run(new PokeGamingStore.GUI.TransactionManagementForm(service));
+                        });
+                        thread1.SetApartmentState(ApartmentState.STA);
+                        thread1.Start();
+                        thread1.Join();
+                        break;
                     case "0":
                         running = false;
                         break;
@@ -79,6 +88,7 @@ namespace PokeGamingStore
             Console.WriteLine("4. Menu Keranjang & Stok Barang");
             Console.WriteLine("5. Menu Manajemen User & History");
             Console.WriteLine("6. Buka GUI Katalog Produk");
+            Console.WriteLine("7. Buka GUI Manajemen Transaksi");
             Console.WriteLine("0. Keluar");
         }
         static void DemoKeranjangDanStok(ITransactionService service, IUserService userService)
