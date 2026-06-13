@@ -7,24 +7,23 @@
         protected override void Dispose(bool disposing)
         {
             if (disposing && (components != null))
+            {
                 components.Dispose();
+            }
             base.Dispose(disposing);
         }
 
         private void InitializeComponent()
         {
-            SuspendLayout();
+            this.SuspendLayout();
             // 
             // CatalogForm
             // 
-            AutoScaleDimensions = new SizeF(8F, 20F);
-            AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(983, 827);
-            Margin = new Padding(3, 4, 3, 4);
-            Name = "CatalogForm";
-            Text = "PokeGamingStore";
-            Load += CatalogForm_Load;
-            ResumeLayout(false);
+            this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
+            this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+            this.Name = "CatalogForm";
+            this.Text = "PokeGamingStore - Katalog";
+            this.ResumeLayout(false);
         }
     }
 }
