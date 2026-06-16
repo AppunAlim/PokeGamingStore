@@ -4,6 +4,7 @@ using System;
 using System.Data;
 using System.Drawing;
 using System.Windows.Forms;
+using Microsoft.VisualBasic;
 
 namespace PokeGamingStore.GUI
 {
@@ -142,8 +143,10 @@ namespace PokeGamingStore.GUI
         private void LoadEventComboBox()
         {
             cmbEvents.Items.Clear();
-            foreach (var evt in Enum.GetValues(typeof(EventPesanan)))
+            foreach (EventPesanan evt in Enum.GetValues(typeof(EventPesanan)))
             {
+                // Jangan tampilkan opsi 'Bayar' pada combobox manajemen transaksi
+                if (evt == EventPesanan.Bayar) continue;
                 cmbEvents.Items.Add(evt);
             }
             if (cmbEvents.Items.Count > 0) cmbEvents.SelectedIndex = 0;
@@ -193,8 +196,32 @@ namespace PokeGamingStore.GUI
 
             try
             {
+                // Jika event adalah Kemas, tampilkan popup input nomor resi sebagai gimmick
+                string resi = null;
+                if (selectedEvent == EventPesanan.Kemas)
+                {
+                    resi = Interaction.InputBox("Masukkan nomor resi:", "Input Resi", "");
+
+                    // Jika pengguna menekan Cancel atau tidak mengisi, tanyakan konfirmasi
+                    if (string.IsNullOrWhiteSpace(resi))
+                    {
+                        var ask = MessageBox.Show("Nomor resi kosong. Lanjutkan tanpa memasukkan resi?", "Konfirmasi", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
+                        if (ask == DialogResult.No) return;
+                    }
+                }
+
                 var updatedOrder = _transactionService.TerapkanEvent(orderId, selectedEvent);
-                MessageBox.Show($"Status Pesanan Berhasil Diubah Menjadi: [{updatedOrder.Status}]", "Sukses", MessageBoxButtons.OK, MessageBoxIcon.Information);
+
+                // Jika ada resi yang dimasukkan, tampilkan sebagai bagian dari feedback
+                if (!string.IsNullOrWhiteSpace(resi))
+                {
+                    MessageBox.Show($"Status Pesanan Berhasil Diubah Menjadi: [{updatedOrder.Status}]\nNomor Resi: {resi}", "Sukses", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                }
+                else
+                {
+                    MessageBox.Show($"Status Pesanan Berhasil Diubah Menjadi: [{updatedOrder.Status}]", "Sukses", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                }
+
                 RefreshTransactionTable();
             }
             catch (Exception ex)
