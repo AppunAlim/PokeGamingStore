@@ -15,121 +15,91 @@
 
         private void InitializeComponent()
         {
-            this.lblTitle = new System.Windows.Forms.Label();
-            this.lblTotalTagihan = new System.Windows.Forms.Label();
-            this.grpMethod = new System.Windows.Forms.GroupBox();
-            this.rdbOvo = new System.Windows.Forms.RadioButton();
-            this.rdbQris = new System.Windows.Forms.RadioButton();
-            this.btnConfirmPayment = new System.Windows.Forms.Button();
-            this.btnCancel = new System.Windows.Forms.Button();
-            this.grpMethod.SuspendLayout();
+            this.lblTotalPayment = new System.Windows.Forms.Label();
+            this.pnlPaymentDetails = new System.Windows.Forms.Panel();
+            this.lblSelectMethod = new System.Windows.Forms.Label();
+            this.rbQris = new System.Windows.Forms.RadioButton();
+            this.rbTransfer = new System.Windows.Forms.RadioButton();
             this.SuspendLayout();
             // 
-            // lblTitle
+            // lblTotalPayment
             // 
-            this.lblTitle.AutoSize = true;
-            this.lblTitle.Font = new System.Drawing.Font("Segoe UI", 12f, System.Drawing.FontStyle.Bold);
-            this.lblTitle.Location = new System.Drawing.Point(20, 20);
-            this.lblTitle.Name = "lblTitle";
-            this.lblTitle.Size = new System.Drawing.Size(163, 21);
-            this.lblTitle.TabIndex = 0;
-            this.lblTitle.Text = "Sistem Pembayaran";
+            this.lblTotalPayment.AutoSize = true;
+            this.lblTotalPayment.Font = new System.Drawing.Font("Segoe UI", 13f, System.Drawing.FontStyle.Bold);
+            this.lblTotalPayment.ForeColor = System.Drawing.Color.DarkGreen;
+            this.lblTotalPayment.Location = new System.Drawing.Point(15, 15);
+            this.lblTotalPayment.Name = "lblTotalPayment";
+            this.lblTotalPayment.Size = new System.Drawing.Size(193, 25);
+            this.lblTotalPayment.TabIndex = 0;
+            this.lblTotalPayment.Text = "Total Tagihan: Rp 0";
             // 
-            // lblTotalTagihan
+            // pnlPaymentDetails
             // 
-            this.lblTotalTagihan.AutoSize = true;
-            this.lblTotalTagihan.Font = new System.Drawing.Font("Segoe UI", 14f, System.Drawing.FontStyle.Bold);
-            this.lblTotalTagihan.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(211)))), ((int)(((byte)(47)))), ((int)(((byte)(47)))));
-            this.lblTotalTagihan.Location = new System.Drawing.Point(20, 55);
-            this.lblTotalTagihan.Name = "lblTotalTagihan";
-            this.lblTotalTagihan.Size = new System.Drawing.Size(166, 25);
-            this.lblTotalTagihan.TabIndex = 1;
-            this.lblTotalTagihan.Text = "Total Tagihan: Rp0";
+            this.pnlPaymentDetails.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.pnlPaymentDetails.Location = new System.Drawing.Point(15, 125);
+            this.pnlPaymentDetails.Name = "pnlPaymentDetails";
+            this.pnlPaymentDetails.Size = new System.Drawing.Size(390, 310);
+            this.pnlPaymentDetails.TabIndex = 3;
             // 
-            // grpMethod
+            // lblSelectMethod
             // 
-            this.grpMethod.Controls.Add(this.rdbOvo);
-            this.grpMethod.Controls.Add(this.rdbQris);
-            this.grpMethod.Location = new System.Drawing.Point(25, 100);
-            this.grpMethod.Name = "grpMethod";
-            this.grpMethod.Size = new System.Drawing.Size(335, 110);
-            this.grpMethod.TabIndex = 2;
-            this.grpMethod.TabStop = false;
-            this.grpMethod.Text = "Pilih Metode Pembayaran";
+            this.lblSelectMethod.AutoSize = true;
+            this.lblSelectMethod.Font = new System.Drawing.Font("Segoe UI", 9.5f, System.Drawing.FontStyle.Bold);
+            this.lblSelectMethod.Location = new System.Drawing.Point(15, 55);
+            this.lblSelectMethod.Name = "lblSelectMethod";
+            this.lblSelectMethod.Size = new System.Drawing.Size(150, 17);
+            this.lblSelectMethod.TabIndex = 4;
+            this.lblSelectMethod.Text = "Pilih Cara Pembayaran:";
             // 
-            // rdbOvo
+            // rbQris
             // 
-            this.rdbOvo.AutoSize = true;
-            this.rdbOvo.Location = new System.Drawing.Point(20, 65);
-            this.rdbOvo.Name = "rdbOvo";
-            this.rdbOvo.Size = new System.Drawing.Size(147, 19);
-            this.rdbOvo.TabIndex = 1;
-            this.rdbOvo.Text = "Transfer Bank";
-            this.rdbOvo.UseVisualStyleBackColor = true;
+            this.rbQris.AutoSize = true;
+            this.rbQris.Font = new System.Drawing.Font("Segoe UI", 9.5f);
+            this.rbQris.Location = new System.Drawing.Point(20, 85);
+            this.rbQris.Name = "rbQris";
+            this.rbQris.Size = new System.Drawing.Size(97, 21);
+            this.rbQris.TabIndex = 5;
+            this.rbQris.TabStop = true;
+            this.rbQris.Text = "QRIS Digital";
+            this.rbQris.UseVisualStyleBackColor = true;
             // 
-            // rdbQris
+            // rbTransfer
             // 
-            this.rdbQris.AutoSize = true;
-            this.rdbQris.Checked = true;
-            this.rdbQris.Location = new System.Drawing.Point(20, 30);
-            this.rdbQris.Name = "rdbQris";
-            this.rdbQris.Size = new System.Drawing.Size(155, 19);
-            this.rdbQris.TabIndex = 0;
-            this.rdbQris.TabStop = true;
-            this.rdbQris.Text = "QRIS";
-            this.rdbQris.UseVisualStyleBackColor = true;
-            // 
-            // btnConfirmPayment
-            // 
-            this.btnConfirmPayment.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(76)))), ((int)(((byte)(175)))), ((int)(((byte)(80)))));
-            this.btnConfirmPayment.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.btnConfirmPayment.ForeColor = System.Drawing.Color.White;
-            this.btnConfirmPayment.Location = new System.Drawing.Point(210, 230);
-            this.btnConfirmPayment.Name = "btnConfirmPayment";
-            this.btnConfirmPayment.Size = new System.Drawing.Size(150, 35);
-            this.btnConfirmPayment.TabIndex = 3;
-            this.btnConfirmPayment.Text = "Konfirmasi & Bayar";
-            this.btnConfirmPayment.UseVisualStyleBackColor = false;
-            this.btnConfirmPayment.Click += new System.EventHandler(this.BtnConfirmPayment_Click);
-            // 
-            // btnCancel
-            // 
-            this.btnCancel.Location = new System.Drawing.Point(25, 230);
-            this.btnCancel.Name = "btnCancel";
-            this.btnCancel.Size = new System.Drawing.Size(100, 35);
-            this.btnCancel.TabIndex = 4;
-            this.btnCancel.Text = "Batal";
-            this.btnCancel.UseVisualStyleBackColor = true;
-            this.btnCancel.Click += new System.EventHandler(this.BtnCancel_Click);
+            this.rbTransfer.AutoSize = true;
+            this.rbTransfer.Font = new System.Drawing.Font("Segoe UI", 9.5f);
+            this.rbTransfer.Location = new System.Drawing.Point(140, 85);
+            this.rbTransfer.Name = "rbTransfer";
+            this.rbTransfer.Size = new System.Drawing.Size(193, 21);
+            this.rbTransfer.TabIndex = 6;
+            this.rbTransfer.TabStop = true;
+            this.rbTransfer.Text = "Bank Transfer (Virtual Account)";
+            this.rbTransfer.UseVisualStyleBackColor = true;
             // 
             // PaymentForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7f, 15f);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(384, 291);
-            this.Controls.Add(this.btnCancel);
-            this.Controls.Add(this.btnConfirmPayment);
-            this.Controls.Add(this.grpMethod);
-            this.Controls.Add(this.lblTotalTagihan);
-            this.Controls.Add(this.lblTitle);
+            this.ClientSize = new System.Drawing.Size(424, 451);
+            this.Controls.Add(this.rbTransfer);
+            this.Controls.Add(this.rbQris);
+            this.Controls.Add(this.lblSelectMethod);
+            this.Controls.Add(this.pnlPaymentDetails);
+            this.Controls.Add(this.lblTotalPayment);
             this.Font = new System.Drawing.Font("Segoe UI", 9f);
+            this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedDialog;
             this.MaximizeBox = false;
             this.MinimizeBox = false;
             this.Name = "PaymentForm";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
-            this.Text = "Pembayaran - PokeGamingStore";
-            this.grpMethod.ResumeLayout(false);
-            this.grpMethod.PerformLayout();
+            this.Text = "Metode Pembayaran Toko";
             this.ResumeLayout(false);
             this.PerformLayout();
         }
 
-        private System.Windows.Forms.Label lblTitle;
-        private System.Windows.Forms.Label lblTotalTagihan;
-        private System.Windows.Forms.GroupBox grpMethod;
-        private System.Windows.Forms.RadioButton rdbOvo;
-        private System.Windows.Forms.RadioButton rdbQris;
-        private System.Windows.Forms.Button btnConfirmPayment;
-        private System.Windows.Forms.Button btnCancel;
+        private System.Windows.Forms.Label lblTotalPayment;
+        private System.Windows.Forms.Panel pnlPaymentDetails;
+        private System.Windows.Forms.Label lblSelectMethod;
+        private System.Windows.Forms.RadioButton rbQris;
+        private System.Windows.Forms.RadioButton rbTransfer;
     }
 }

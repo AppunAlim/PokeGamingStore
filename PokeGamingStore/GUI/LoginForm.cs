@@ -2,79 +2,103 @@
 using System.Windows.Forms;
 using PokeGamingStore.Models;
 using PokeGamingStore.Services;
+using PokeGamingStore.GUI;
 
-namespace PokeGamingStore.GUI
+namespace PokeGamingStore
 {
     public partial class LoginForm : Form
     {
-        private readonly IUserService _userService;
+        private ITransactionService _sharedTransactionService;
+
+        // Menyimpan data akun pendaftaran baru secara dinamis di memori
+        private string _registeredCustomerUsername = "";
+        private string _registeredCustomerPassword = "";
 
         public LoginForm()
         {
             InitializeComponent();
-            _userService = new UserService();
-
-            cmbRole.Items.Clear();
-            cmbRole.Items.Add(UserRole.Admin);
-            cmbRole.Items.Add(UserRole.Regular);
-            cmbRole.SelectedIndex = 1;
-
-            // Suntik akun Admin bawaan otomatis
-            _userService.RegisterUserWithPassword("Admin", "admin123", UserRole.Admin);
+            _sharedTransactionService = new TransactionService();
         }
 
-        private void btnLogin_Click(object sender, EventArgs e)
+        private void BtnLogin_Click(object sender, EventArgs e)
         {
-            string username = txtUsername.Text.Trim();
-            string password = txtPassword.Text; // Asumsi kamu bikin TextBox password
-            UserRole selectedRole = (UserRole)cmbRole.SelectedItem;
+            string usernameInput = txtUsername.Text.Trim();
+            string passwordInput = txtPassword.Text;
 
-            if (string.IsNullOrWhiteSpace(username) || string.IsNullOrWhiteSpace(password))
+            if (string.IsNullOrEmpty(usernameInput) || string.IsNullOrEmpty(passwordInput))
             {
-                MessageBox.Show("Username dan Password wajib diisi!", "Peringatan", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                MessageBox.Show("Username dan Password tidak boleh kosong!", "Peringatan", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
 
-            var loggedInUser = _userService.ValidateLogin(username, password, selectedRole);
+            User loggedInUser = AuthenticateUser(usernameInput, passwordInput);
+
             if (loggedInUser != null)
             {
-                MainForm mainForm = new MainForm(loggedInUser); // Lempar data ke MainForm
+                MainForm mainDashboard = new MainForm(loggedInUser, _sharedTransactionService, this);
+
                 this.Hide();
-                mainForm.ShowDialog();
-                this.Close();
+                mainDashboard.Show();
+
+                txtUsername.Clear();
+                txtPassword.Clear();
             }
             else
             {
-                MessageBox.Show("Kredensial salah atau akun tidak ditemukan!", "Gagal", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show("Username atau password salah! Pastikan Anda sudah mendaftarkan akun terlebih dahulu.", "Login Gagal", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
-        private void btnRegister_Click(object sender, EventArgs e)
+        // Fitur tombol Daftar Akun Baru (Register)
+        private void BtnRegister_Click(object sender, EventArgs e)
         {
-            string username = txtUsername.Text.Trim();
-            string password = txtPassword.Text;
-            UserRole selectedRole = (UserRole)cmbRole.SelectedItem;
+            string regUser = txtUsername.Text.Trim();
+            string regPass = txtPassword.Text;
 
-            if (selectedRole == UserRole.Admin)
+            if (string.IsNullOrEmpty(regUser) || string.IsNullOrEmpty(regPass))
             {
-                MessageBox.Show("Registrasi mandiri untuk Admin tidak diizinkan!", "Ditolak", MessageBoxButtons.OK, MessageBoxIcon.Stop);
+                MessageBox.Show("Silakan isi kolom Username dan Password di atas untuk mendaftarkan akun baru Anda!", "Peringatan", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
 
-            if (string.IsNullOrWhiteSpace(username) || string.IsNullOrWhiteSpace(password))
+            if (regUser.ToLower() == "admin")
             {
-                MessageBox.Show("Isi Username dan Password!", "Peringatan", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                MessageBox.Show("Username 'admin' sudah dicadangkan oleh sistem pusat toko!", "Pendaftaran Gagal", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
 
-            if (_userService.RegisterUserWithPassword(username, password, UserRole.Regular))
+            // Simpan kredensial akun ke memori sementara aplikasi
+            _registeredCustomerUsername = regUser;
+            _registeredCustomerPassword = regPass;
+
+            MessageBox.Show($"Akun Customer dengan username '{regUser}' berhasil dibuat! Silakan klik tombol 'Masuk' untuk melanjutkan.", "Pendaftaran Sukses", MessageBoxButtons.OK, MessageBoxIcon.Information);
+        }
+
+        private User AuthenticateUser(string username, string password)
+        {
+            // Opsi 1: Akun Admin Utama Konstan
+            if (username.ToLower() == "admin" && password == "admin123")
             {
-                MessageBox.Show($"Akun '{username}' sukses dibuat. Silakan Login.", "Sukses", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                return new User
+                {
+                    Username = "Admin",
+                    Role = UserRole.Admin
+                };
             }
-            else
+
+            // Opsi 2: Akun Customer Harus Melalui Registrasi Terlebih Dahulu
+            if (!string.IsNullOrEmpty(_registeredCustomerUsername) &&
+                username == _registeredCustomerUsername &&
+                password == _registeredCustomerPassword)
             {
-                MessageBox.Show("Username sudah terpakai!", "Gagal", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return new User
+                {
+                    Username = _registeredCustomerUsername,
+                    Role = UserRole.Regular
+                };
             }
+
+            return null;
         }
     }
 }
