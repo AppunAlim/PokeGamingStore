@@ -18,13 +18,28 @@ namespace PokeGamingStore
 
         public void AddToCart(Item item, int quantity)
         {
-            int currentTotal = GetTotalItems();
-            if (currentTotal + quantity > maxItems)
+            if (item == null)
             {
-                throw new InvalidOperationException("Kapasitas keranjang penuh.");
+                throw new ArgumentNullException("Item tidak boleh kosong.");
             }
 
-            stockManager.ReduceStock(item.Id, quantity);
+            if (quantity <= 0)
+            {
+                throw new ArgumentException("Jumlah item yang ditambahkan harus lebih dari 0.");
+            }
+
+            // Menggunakan nama variabel lama yang sudah disesuaikan
+            int currentStock = stockManager.GetStock(item.Id);
+
+            if (currentStock < quantity)
+            {
+                throw new InvalidOperationException($"Gagal menambah ke keranjang! Stok untuk {item.Name} tidak mencukupi (Sisa Stok: {currentStock}).");
+            }
+
+            if (GetTotalItems() + quantity > maxItems)
+            {
+                throw new InvalidOperationException("Keranjang sudah penuh! Tidak dapat menambahkan item lagi.");
+            }
 
             if (items.ContainsKey(item.Id))
             {
@@ -34,6 +49,9 @@ namespace PokeGamingStore
             {
                 items.Add(item.Id, quantity);
             }
+
+            // Menggunakan stockManager lama kamu untuk mengurangi stok
+            stockManager.ReduceStock(item.Id, quantity);
         }
 
         public void RemoveFromCart(Item item, int quantity)

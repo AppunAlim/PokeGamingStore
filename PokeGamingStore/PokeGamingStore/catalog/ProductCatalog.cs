@@ -41,11 +41,12 @@ namespace PokeGamingStore.Catalog
             if (typeof(T) == typeof(Product))
             {
                 var dummyItems = new List<Product>
-                {
-                    new Product { Id = "P001", Name = "Elden Ring", Category = "Game", Price = 600000 },
-                    new Product { Id = "P002", Name = "PS5 Controller", Category = "Accessory", Price = 1200000 },
-                    new Product { Id = "P003", Name = "Persona 5 Royal", Category = "RPG", Price = 750000 }
-                };
+        {
+            new Product { Id = "P001", Name = "Elden Ring", Category = "GAME", Price = 600000 },
+            new Product { Id = "P002", Name = "PS5 Controller", Category = "ACCESSORY", Price = 1200000 },
+            new Product { Id = "P003", Name = "Persona 5 Royal", Category = "GAME", Price = 750000 },
+            new Product { Id = "P004", Name = "Xbox 360", Category = "CONSOLE", Price = 3000000 }
+        };
 
                 foreach (var item in dummyItems)
                 {
