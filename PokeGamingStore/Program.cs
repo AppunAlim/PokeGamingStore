@@ -13,7 +13,7 @@ namespace PokeGamingStore
             Application.SetCompatibleTextRenderingDefault(false);
 
             // Langsung jalankan wadah utama GUI, tidak memakai CMD lagi
-            Application.Run(new MainForm());
+            Application.Run(new LoginForm());
         }
     }
 }

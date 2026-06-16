@@ -5,6 +5,7 @@ using System.Windows.Forms;
 using PokeGamingStore;
 using PokeGamingStore.Catalog;
 using PokeGamingStore.Services;
+using PokeGamingStore.Models; 
 
 namespace PokeGamingStore.GUI
 {
@@ -171,12 +172,21 @@ namespace PokeGamingStore.GUI
             {
                 if (paymentForm.ShowDialog() == DialogResult.OK)
                 {
-                    // Membuat ID unik baru untuk pelanggan
-                    Guid pelangganIdBaru = Guid.NewGuid();
+ 
+                    User currentUser = MainForm.LoggedInUser;
+                    string idPelangganAktif = currentUser?.CustomerId;
 
-                    // Membuat ID pelanggan acak
-                    string customerIdString = "CUST-" + Guid.NewGuid().ToString().Substring(0, 5).ToUpper();
-                    _transactionService.BuatTransaksi(customerIdString, checkoutTotal);
+                    // Berjaga-jaga jika sesi hilang atau admin lolos
+                    if (string.IsNullOrEmpty(idPelangganAktif))
+                    {
+                        idPelangganAktif = "CUST-UNKNOWN";
+                    }
+                    _transactionService.BuatTransaksi(idPelangganAktif, checkoutTotal);
+
+
+                    IUserService userService = new UserService();
+                    string generateOrderId = "ORD-" + new Random().Next(100, 999).ToString("D3");
+                    userService.RecordPurchase(idPelangganAktif, generateOrderId, checkoutTotal);
 
                     // Bersihkan barang yang sukses dibayar dari keranjang
                     foreach (string id in itemIdsToRemove)
@@ -184,6 +194,8 @@ namespace PokeGamingStore.GUI
                         _cart.GetItems().Remove(id);
                     }
                     UpdateCartList();
+
+                    MessageBox.Show("Pembayaran Berhasil! Histori transaksi telah tersimpan di sistem.", "Checkout Sukses", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 }
             }
         }

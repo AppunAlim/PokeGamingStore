@@ -3,14 +3,18 @@ using System.Drawing;
 using System.Windows.Forms;
 using PokeGamingStore.Services;
 using PokeGamingStore.Catalog;
+using PokeGamingStore.Models;
 
 namespace PokeGamingStore.GUI
 {
-    internal partial class MainForm : Form
+    public partial class MainForm : Form
     {
         private StockManager stockManager;
         private Cart cart;
         private ITransactionService transactionService;
+
+        public static User LoggedInUser { get; private set; }
+        private User _currentUser;
 
         private Panel pnlSidebar;
         private Panel pnlMainContainer;
@@ -18,18 +22,20 @@ namespace PokeGamingStore.GUI
         private Button btnCatalog;
         private Button btnTransactions;
         private Button btnStockManager;
+        private Button btnUserHistory;
         private Button btnExit;
 
-        public MainForm()
+        public MainForm(User loggedInUser)
         {
+            LoggedInUser = loggedInUser;
+            _currentUser = loggedInUser;
+
             stockManager = new StockManager();
             cart = new Cart(stockManager, 10);
             transactionService = new TransactionService();
 
             LoadInitialData();
-
             InitializeComponents();
-
             ShowWelcomePage();
         }
 
@@ -49,6 +55,7 @@ namespace PokeGamingStore.GUI
             this.btnCatalog = new Button();
             this.btnTransactions = new Button();
             this.btnStockManager = new Button();
+            this.btnUserHistory = new Button();
             this.btnExit = new Button();
 
             this.SuspendLayout();
@@ -60,6 +67,7 @@ namespace PokeGamingStore.GUI
 
             this.pnlSidebar.BackColor = Color.FromArgb(45, 45, 48);
             this.pnlSidebar.Controls.Add(this.btnExit);
+            this.pnlSidebar.Controls.Add(this.btnUserHistory);
             this.pnlSidebar.Controls.Add(this.btnStockManager);
             this.pnlSidebar.Controls.Add(this.btnTransactions);
             this.pnlSidebar.Controls.Add(this.btnCatalog);
@@ -80,8 +88,21 @@ namespace PokeGamingStore.GUI
             SetupSidebarButton(this.btnTransactions, "Manajemen Transaksi", 135);
             this.btnTransactions.Click += (s, e) => SwitchPage(new TransactionManagementForm(transactionService));
 
-            SetupSidebarButton(this.btnStockManager, "Gudang & Admin", 190);
-            this.btnStockManager.Click += (s, e) => SwitchPage(new StockManagerForm(stockManager));
+            SetupSidebarButton(this.btnStockManager, "Gudang && Admin", 190);
+            this.btnStockManager.Click += (s, e) =>
+            {
+                if (_currentUser.Role == UserRole.Admin)
+                {
+                    SwitchPage(new StockManagerForm(stockManager));
+                }
+                else
+                {
+                    MessageBox.Show("Anda bukan admin.", "Akses Ditolak", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                }
+            };
+
+            SetupSidebarButton(this.btnUserHistory, "Manajemen User && Histori", 245);
+            this.btnUserHistory.Click += (s, e) => SwitchPage(new UserHistoryForm());
 
             SetupSidebarButton(this.btnExit, "Keluar Aplikasi", 580);
             this.btnExit.BackColor = Color.FromArgb(211, 47, 47);
@@ -116,7 +137,7 @@ namespace PokeGamingStore.GUI
             pnlMainContainer.Controls.Clear();
             Label lblWelcome = new Label
             {
-                Text = "Selamat Datang di PokeGamingStore Panel!\n\nSilakan pilih menu di samping untuk memulai operasional toko.",
+                Text = $"Selamat Datang di PokeGamingStore Panel, {_currentUser.Username}!\n\nHak Akses: {_currentUser.Role}\nSilakan pilih menu di samping.",
                 Font = new Font("Segoe UI", 14f),
                 ForeColor = Color.DimGray,
                 Dock = DockStyle.Fill,
@@ -125,17 +146,13 @@ namespace PokeGamingStore.GUI
             pnlMainContainer.Controls.Add(lblWelcome);
         }
 
-        // FUNGSI UTAMA NAVIGASI: Mengubah isi halaman tengah tanpa close form
         private void SwitchPage(Form childForm)
         {
             pnlMainContainer.Controls.Clear();
-
             childForm.TopLevel = false;
             childForm.FormBorderStyle = FormBorderStyle.None;
             childForm.Dock = DockStyle.Fill;
-
             AddBackButtonToChild(childForm);
-
             pnlMainContainer.Controls.Add(childForm);
             childForm.Show();
         }
@@ -151,31 +168,21 @@ namespace PokeGamingStore.GUI
                     break;
                 }
             }
-
             if (header != null)
             {
-                int buttonWidth = 100;
-                int buttonHeight = 30;
-                int middleY = (header.Height / 2) - (buttonHeight / 2);
-
-                int finalX = header.Width - 120;
-
                 Button btnBack = new Button
                 {
                     Text = "Kembali",
                     Font = new Font("Segoe UI", 9f, FontStyle.Bold),
                     BackColor = Color.White,
                     ForeColor = Color.Black,
-                    Location = new Point(finalX, middleY),
-                    Size = new Size(buttonWidth, buttonHeight),
+                    Location = new Point(header.Width - 120, (header.Height / 2) - 15),
+                    Size = new Size(100, 30),
                     FlatStyle = FlatStyle.Flat
                 };
                 btnBack.FlatAppearance.BorderSize = 0;
-
                 btnBack.Anchor = AnchorStyles.Top | AnchorStyles.Right;
-
                 btnBack.Click += (s, e) => ShowWelcomePage();
-
                 header.Controls.Add(btnBack);
                 btnBack.BringToFront();
             }
