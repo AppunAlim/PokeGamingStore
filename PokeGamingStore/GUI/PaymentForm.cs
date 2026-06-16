@@ -1,4 +1,5 @@
-﻿using System;
+﻿using PokeGamingStore.Services;
+using System;
 using System.Data;
 using System.Windows.Forms;
 
@@ -8,11 +9,15 @@ namespace PokeGamingStore.GUI
     {
         private DataTable _dtSelectedItems;
         private decimal _totalAmount;
+        private ITransactionService _transactionService;
+        private Guid _orderId;
 
-        public PaymentForm(DataTable dtSelectedItems, decimal totalAmount)
+        public PaymentForm(DataTable dtSelectedItems, decimal totalAmount, ITransactionService transactionService, Guid orderId)
         {
             _dtSelectedItems = dtSelectedItems ?? throw new ArgumentNullException(nameof(dtSelectedItems));
             _totalAmount = totalAmount;
+            _transactionService = transactionService ?? throw new ArgumentNullException(nameof(transactionService));
+            _orderId = orderId;
 
             InitializeComponent();
 
@@ -33,10 +38,19 @@ namespace PokeGamingStore.GUI
 
             if (result == DialogResult.Yes)
             {
-                MessageBox.Show("Pembayaran Berhasil Dikonfirmasi!", "Sukses", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                // Terapkan event "Bayar" langsung pada transaksi yang sudah dibuat
+                try
+                {
+                    _transactionService.TerapkanEvent(_orderId, Models.EventPesanan.Bayar);
+                    MessageBox.Show("Pembayaran Berhasil Dikonfirmasi!", "Sukses", MessageBoxButtons.OK, MessageBoxIcon.Information);
 
-                this.DialogResult = DialogResult.OK;
-                this.Close();
+                    this.DialogResult = DialogResult.OK;
+                    this.Close();
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show($"Gagal menerapkan status pembayaran: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
             }
         }
 

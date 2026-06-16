@@ -168,22 +168,19 @@ namespace PokeGamingStore.GUI
                 return;
             }
 
-            using (var paymentForm = new PaymentForm(dtSelected, checkoutTotal))
+            // Tentukan pelanggan aktif sebelum membuat transaksi agar order dapat dibuat
+            User currentUser = MainForm.LoggedInUser;
+            string idPelangganAktif = currentUser?.CustomerId;
+            if (string.IsNullOrEmpty(idPelangganAktif)) idPelangganAktif = "CUST-UNKNOWN";
+
+            // Buat transaksi terlebih dahulu sehingga PaymentForm dapat menerapkan event bayar langsung
+            var createdOrder = _transactionService.BuatTransaksi(idPelangganAktif, checkoutTotal);
+
+            using (var paymentForm = new PaymentForm(dtSelected, checkoutTotal, _transactionService, createdOrder.Id))
             {
                 if (paymentForm.ShowDialog() == DialogResult.OK)
                 {
- 
-                    User currentUser = MainForm.LoggedInUser;
-                    string idPelangganAktif = currentUser?.CustomerId;
-
-                    // Berjaga-jaga jika sesi hilang atau admin lolos
-                    if (string.IsNullOrEmpty(idPelangganAktif))
-                    {
-                        idPelangganAktif = "CUST-UNKNOWN";
-                    }
-                    _transactionService.BuatTransaksi(idPelangganAktif, checkoutTotal);
-
-
+                    // Catat pembelian pada user service
                     IUserService userService = new UserService();
                     string generateOrderId = "ORD-" + new Random().Next(100, 999).ToString("D3");
                     userService.RecordPurchase(idPelangganAktif, generateOrderId, checkoutTotal);
@@ -196,6 +193,18 @@ namespace PokeGamingStore.GUI
                     UpdateCartList();
 
                     MessageBox.Show("Pembayaran Berhasil! Histori transaksi telah tersimpan di sistem.", "Checkout Sukses", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                }
+                else
+                {
+                    // Jika pembayaran dibatalkan, batalkan transaksi yang baru dibuat
+                    try
+                    {
+                        _transactionService.TerapkanEvent(createdOrder.Id, Models.EventPesanan.Batal);
+                    }
+                    catch
+                    {
+                        // ignore jika transisi batal tidak valid
+                    }
                 }
             }
         }
