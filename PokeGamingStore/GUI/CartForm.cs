@@ -1,11 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Data;
 using System.Windows.Forms;
-using PokeGamingStore;
-using PokeGamingStore.Catalog;
 using PokeGamingStore.Services;
-using PokeGamingStore.Models; 
 
 namespace PokeGamingStore.GUI
 {
@@ -14,6 +10,7 @@ namespace PokeGamingStore.GUI
         private Cart _cart;
         private StockManager _stockManager;
         private ITransactionService _transactionService;
+        private bool _isRefreshing = false;
 
         public CartForm(Cart cart, StockManager stockManager, ITransactionService transactionService)
         {
@@ -22,190 +19,225 @@ namespace PokeGamingStore.GUI
             _transactionService = transactionService ?? throw new ArgumentNullException(nameof(transactionService));
 
             InitializeComponent();
-            SetupTableColumns();
-            UpdateCartList();
+            LoadCartData();
+
+            dgvCart.CellValueChanged += DgvCart_CellValueChanged;
+            dgvCart.CurrentCellDirtyStateChanged += DgvCart_CurrentCellDirtyStateChanged;
         }
 
-        private void SetupTableColumns()
+        private void LoadCartData()
         {
-            dgvCartItems.Columns.Clear();
-            var checkColumn = new DataGridViewCheckBoxColumn
+            _isRefreshing = true;
+
+            DataTable dt = new DataTable();
+            dt.Columns.Add("Pilih", typeof(bool));
+            dt.Columns.Add("ID Produk", typeof(string));
+            dt.Columns.Add("Nama Produk", typeof(string));
+            dt.Columns.Add("Harga Satuan", typeof(decimal));
+            dt.Columns.Add("Qty", typeof(int));
+            dt.Columns.Add("Total Harga", typeof(decimal));
+
+            foreach (var item in _cart.GetItems())
             {
-                Name = "Pilih",
-                HeaderText = "Pilih",
-                Width = 50,
-                TrueValue = true,
-                FalseValue = false
-            };
-            dgvCartItems.Columns.Add(checkColumn);
-            dgvCartItems.Columns.Add("ID", "ID Produk");
-            dgvCartItems.Columns.Add("Nama", "Nama Produk");
-            dgvCartItems.Columns.Add("Harga", "Harga Satuan");
-            dgvCartItems.Columns.Add("Qty", "Kuantitas");
-            dgvCartItems.Columns.Add("Total", "Total Harga");
+                string productId = item.Key;
+                int quantity = item.Value;
 
-            foreach (DataGridViewColumn col in dgvCartItems.Columns)
-            {
-                if (col.Name != "Pilih") col.ReadOnly = true;
-            }
-            dgvCartItems.Columns["Harga"].DefaultCellStyle.Format = "Rp#,0";
-            dgvCartItems.Columns["Total"].DefaultCellStyle.Format = "Rp#,0";
-        }
-
-        private void UpdateCartList()
-        {
-            dgvCartItems.Rows.Clear();
-            var cartItems = _cart.GetItems();
-
-            foreach (var kvp in cartItems)
-            {
-                string itemId = kvp.Key;
-                int quantity = kvp.Value;
-                string displayName = itemId;
-                decimal itemPrice = 0;
-
-                Item item = _stockManager.GetItem(itemId);
-                if (item != null)
+                var targetItem = _stockManager.GetItem(productId);
+                if (targetItem != null)
                 {
-                    displayName = item.Name;
-                    itemPrice = item.Price;
+                    decimal unitPrice = targetItem.Price;
+                    decimal totalItemPrice = unitPrice * quantity;
+                    dt.Rows.Add(true, productId, targetItem.Name, unitPrice, quantity, totalItemPrice);
                 }
-                else
+            }
+
+            dgvCart.DataSource = dt;
+
+            foreach (DataGridViewColumn col in dgvCart.Columns)
+            {
+                if (col.Name == "Pilih") col.ReadOnly = false;
+                else col.ReadOnly = true;
+            }
+
+            dgvCart.Columns["Harga Satuan"].DefaultCellStyle.Format = "Rp#,0";
+            dgvCart.Columns["Total Harga"].DefaultCellStyle.Format = "Rp#,0";
+
+            UpdateGrandTotal();
+            _isRefreshing = false;
+        }
+
+        private void DgvCart_CurrentCellDirtyStateChanged(object sender, EventArgs e)
+        {
+            if (dgvCart.IsCurrentCellDirty && dgvCart.CurrentCell.ColumnIndex == 0)
+            {
+                dgvCart.CommitEdit(DataGridViewDataErrorContexts.Commit);
+            }
+        }
+
+        private void DgvCart_CellValueChanged(object sender, DataGridViewCellEventArgs e)
+        {
+            if (!_isRefreshing && e.ColumnIndex == 0 && e.RowIndex >= 0)
+            {
+                UpdateGrandTotal();
+            }
+        }
+
+        private void BtnPlus_Click(object sender, EventArgs e)
+        {
+            if (dgvCart.CurrentRow == null)
+            {
+                MessageBox.Show("Silakan pilih salah satu produk di dalam tabel terlebih dahulu!", "Peringatan", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
+            var row = dgvCart.CurrentRow;
+            string productId = row.Cells["ID Produk"].Value.ToString();
+            string productName = row.Cells["Nama Produk"].Value.ToString();
+            int currentQty = _cart.GetItems()[productId];
+            int availableStock = _stockManager.GetStock(productId);
+
+            if (currentQty + 1 > availableStock)
+            {
+                MessageBox.Show($"Kuantitas melebihi sisa stok di gudang!\n\nSisa stok {productName} saat ini: {availableStock} pcs.",
+                                "Stok Tidak Mencukupi",
+                                MessageBoxButtons.OK,
+                                MessageBoxIcon.Error);
+                return;
+            }
+
+            int newQty = currentQty + 1;
+            _cart.GetItems()[productId] = newQty;
+
+            row.Cells["Qty"].Value = newQty;
+            decimal unitPrice = Convert.ToDecimal(row.Cells["Harga Satuan"].Value);
+            row.Cells["Total Harga"].Value = unitPrice * newQty;
+
+            UpdateGrandTotal();
+        }
+
+        private void BtnMin_Click(object sender, EventArgs e)
+        {
+            if (dgvCart.CurrentRow == null)
+            {
+                MessageBox.Show("Silakan pilih salah satu produk di dalam tabel terlebih dahulu!", "Peringatan", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
+            var row = dgvCart.CurrentRow;
+            string productId = row.Cells["ID Produk"].Value.ToString();
+            int currentQty = _cart.GetItems()[productId];
+
+            if (currentQty > 1)
+            {
+                int newQty = currentQty - 1;
+                _cart.GetItems()[productId] = newQty;
+
+                row.Cells["Qty"].Value = newQty;
+                decimal unitPrice = Convert.ToDecimal(row.Cells["Harga Satuan"].Value);
+                row.Cells["Total Harga"].Value = unitPrice * newQty;
+
+                UpdateGrandTotal();
+            }
+            else
+            {
+                MessageBox.Show("Kuantitas minimal adalah 1 pcs! Gunakan tombol 'Hapus Item' jika ingin membatalkan produk.", "Info", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            }
+        }
+
+        private void BtnDelete_Click(object sender, EventArgs e)
+        {
+            int checkedCount = 0;
+            foreach (DataGridViewRow row in dgvCart.Rows)
+            {
+                if (row.Cells["Pilih"].Value != null && Convert.ToBoolean(row.Cells["Pilih"].Value) == true)
                 {
-                    var catalogProducts = ProductCatalog<Product>.Instance.GetAllProducts();
-                    var matchedProduct = catalogProducts.Find(p => p.Id == itemId);
-                    if (matchedProduct != null)
+                    checkedCount++;
+                }
+            }
+
+            if (checkedCount == 0)
+            {
+                MessageBox.Show("Silakan centang (ceklis) terlebih dahulu item yang ingin dihapus dari keranjang!", "Peringatan", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
+            DialogResult confirm = MessageBox.Show($"Apakah Anda yakin ingin menghapus {checkedCount} item terpilih dari keranjang belanja?","Konfirmasi Hapus Terpilih",MessageBoxButtons.YesNo, MessageBoxIcon.Question);
+            if (confirm == DialogResult.Yes)
+            {
+                // Iterasi mundur dari bawah ke atas agar indeks tabel tidak rusak saat penghapusan berjalan
+                for (int i = dgvCart.Rows.Count - 1; i >= 0; i--)
+                {
+                    var row = dgvCart.Rows[i];
+                    if (row.Cells["Pilih"].Value != null && Convert.ToBoolean(row.Cells["Pilih"].Value) == true)
                     {
-                        displayName = matchedProduct.Name;
-                        if (itemId == "P001") itemPrice = 600000;
-                        else if (itemId == "P002") itemPrice = 1200000;
-                        else if (itemId == "P003") itemPrice = 750000;
-                        else if (itemId == "P004") itemPrice = 3000000;
+                        string productId = row.Cells["ID Produk"].Value.ToString();
+                        _cart.GetItems().Remove(productId); 
                     }
                 }
 
-                decimal totalProductPrice = itemPrice * quantity;
-                dgvCartItems.Rows.Add(true, itemId, displayName, itemPrice, quantity, totalProductPrice);
+                LoadCartData();
             }
-
-            lblTotalItems.Text = $"Total Item di Keranjang: {_cart.GetTotalItems()}";
-            CalculateSelectedTotal();
         }
 
-        private void CalculateSelectedTotal()
+        private void UpdateGrandTotal()
         {
-            decimal selectedTotal = 0;
-            foreach (DataGridViewRow row in dgvCartItems.Rows)
+            decimal total = 0;
+            foreach (DataGridViewRow row in dgvCart.Rows)
             {
-                if (row.Cells["Pilih"].Value != null && (bool)row.Cells["Pilih"].Value == true)
+                if (row.Cells["Pilih"].Value != null && Convert.ToBoolean(row.Cells["Pilih"].Value) == true)
                 {
-                    selectedTotal += Convert.ToDecimal(row.Cells["Total"].Value);
+                    decimal rowTotal = Convert.ToDecimal(row.Cells["Total Harga"].Value);
+                    total += rowTotal;
                 }
             }
-            lblTotalHarga.Text = $"Total Terpilih: Rp{selectedTotal:N0}";
-        }
-
-        private void dgvCartItems_CellValueChanged(object sender, DataGridViewCellEventArgs e)
-        {
-            if (e.ColumnIndex == 0 && e.RowIndex >= 0) CalculateSelectedTotal();
-        }
-
-        private void dgvCartItems_CellContentClick(object sender, DataGridViewCellEventArgs e)
-        {
-            if (e.ColumnIndex == 0 && e.RowIndex >= 0) dgvCartItems.CommitEdit(DataGridViewDataErrorContexts.Commit);
-        }
-
-        private void BtnRemoveItem_Click(object sender, EventArgs e)
-        {
-            if (dgvCartItems.SelectedRows.Count == 0) return;
-            DataGridViewRow selectedRow = dgvCartItems.SelectedRows[0];
-            string itemId = selectedRow.Cells["ID"].Value.ToString();
-            string displayName = selectedRow.Cells["Nama"].Value.ToString();
-
-            DialogResult result = MessageBox.Show($"Kurangi '{displayName}' dari keranjang?", "Konfirmasi", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
-            if (result == DialogResult.No) return;
-
-            try
-            {
-                Item item = _stockManager.GetItem(itemId) ?? new Item { Id = itemId };
-                _cart.RemoveFromCart(item, 1);
-                UpdateCartList();
-            }
-            catch (Exception ex) { MessageBox.Show(ex.Message, "Error"); }
+            lblGrandTotal.Text = $"Total Pembayaran: Rp {total:N0}";
         }
 
         private void BtnCheckout_Click(object sender, EventArgs e)
         {
-            DataTable dtSelected = new DataTable();
-            dtSelected.Columns.Add("ID Produk");
-            dtSelected.Columns.Add("Nama Produk");
-            dtSelected.Columns.Add("Harga Satuan", typeof(decimal));
-            dtSelected.Columns.Add("Kuantitas", typeof(int));
-            dtSelected.Columns.Add("Total Harga", typeof(decimal));
+            DataTable dtCheckedItems = new DataTable();
+            dtCheckedItems.Columns.Add("ID Produk");
+            dtCheckedItems.Columns.Add("Nama Produk");
+            dtCheckedItems.Columns.Add("Harga Satuan", typeof(decimal));
+            dtCheckedItems.Columns.Add("Qty", typeof(int));
+            dtCheckedItems.Columns.Add("Total Harga", typeof(decimal));
 
             decimal checkoutTotal = 0;
-            List<string> itemIdsToRemove = new List<string>();
 
-            foreach (DataGridViewRow row in dgvCartItems.Rows)
+            foreach (DataGridViewRow row in dgvCart.Rows)
             {
-                if (row.Cells["Pilih"].Value != null && (bool)row.Cells["Pilih"].Value == true)
+                if (row.Cells["Pilih"].Value != null && Convert.ToBoolean(row.Cells["Pilih"].Value) == true)
                 {
-                    string id = row.Cells["ID"].Value.ToString();
-                    string nama = row.Cells["Nama"].Value.ToString();
-                    decimal harga = Convert.ToDecimal(row.Cells["Harga"].Value);
-                    int qty = Convert.ToInt32(row.Cells["Qty"].Value);
-                    decimal total = Convert.ToDecimal(row.Cells["Total"].Value);
+                    string pId = row.Cells["ID Produk"].Value.ToString();
+                    string pName = row.Cells["Nama Produk"].Value.ToString();
+                    decimal pPrice = Convert.ToDecimal(row.Cells["Harga Satuan"].Value);
+                    int pQty = Convert.ToInt32(row.Cells["Qty"].Value);
+                    decimal pTotal = Convert.ToDecimal(row.Cells["Total Harga"].Value);
 
-                    dtSelected.Rows.Add(id, nama, harga, qty, total);
-                    checkoutTotal += total;
-                    itemIdsToRemove.Add(id);
+                    dtCheckedItems.Rows.Add(pId, pName, pPrice, pQty, pTotal);
+                    checkoutTotal += pTotal;
                 }
             }
 
-            if (dtSelected.Rows.Count == 0)
+            if (dtCheckedItems.Rows.Count == 0)
             {
-                MessageBox.Show("Silakan centang minimal satu produk untuk dicheckout!", "Peringatan", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                MessageBox.Show("Silakan pilih minimal satu produk dengan mencentang kotak untuk melanjutkan proses checkout!", "Peringatan", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
 
-            // Tentukan pelanggan aktif sebelum membuat transaksi agar order dapat dibuat
-            User currentUser = MainForm.LoggedInUser;
-            string idPelangganAktif = currentUser?.CustomerId;
-            if (string.IsNullOrEmpty(idPelangganAktif)) idPelangganAktif = "CUST-UNKNOWN";
+            Guid pelangganId = Guid.NewGuid();
+            PaymentForm paymentForm = new PaymentForm(dtCheckedItems, checkoutTotal, _transactionService, pelangganId);
 
-            // Buat transaksi terlebih dahulu sehingga PaymentForm dapat menerapkan event bayar langsung
-            var createdOrder = _transactionService.BuatTransaksi(idPelangganAktif, checkoutTotal);
-
-            using (var paymentForm = new PaymentForm(dtSelected, checkoutTotal, _transactionService, createdOrder.Id))
+            if (paymentForm.ShowDialog() == DialogResult.OK)
             {
-                if (paymentForm.ShowDialog() == DialogResult.OK)
+                foreach (DataRow checkedRow in dtCheckedItems.Rows)
                 {
-                    // Catat pembelian pada user service
-                    IUserService userService = new UserService();
-                    string generateOrderId = "ORD-" + new Random().Next(100, 999).ToString("D3");
-                    userService.RecordPurchase(idPelangganAktif, generateOrderId, checkoutTotal);
-
-                    // Bersihkan barang yang sukses dibayar dari keranjang
-                    foreach (string id in itemIdsToRemove)
-                    {
-                        _cart.GetItems().Remove(id);
-                    }
-                    UpdateCartList();
-
-                    MessageBox.Show("Pembayaran Berhasil! Histori transaksi telah tersimpan di sistem.", "Checkout Sukses", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    string checkedProductId = checkedRow["ID Produk"].ToString();
+                    _cart.GetItems().Remove(checkedProductId);
                 }
-                else
-                {
-                    // Jika pembayaran dibatalkan, batalkan transaksi yang baru dibuat
-                    try
-                    {
-                        _transactionService.TerapkanEvent(createdOrder.Id, Models.EventPesanan.Batal);
-                    }
-                    catch
-                    {
-                        // ignore jika transisi batal tidak valid
-                    }
-                }
+
+                LoadCartData();
+                this.Close();
             }
         }
     }
