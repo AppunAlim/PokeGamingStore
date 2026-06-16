@@ -14,7 +14,7 @@ public sealed class TransactionService : ITransactionService
             { (StatusPesanan.Dibayar, EventPesanan.Kemas), StatusPesanan.Dikemas },
             { (StatusPesanan.Dibayar, EventPesanan.Batal), StatusPesanan.Dibatalkan },
             { (StatusPesanan.Dikemas, EventPesanan.Kirim), StatusPesanan.Dikirim },
-            { (StatusPesanan.Dikirim, EventPesanan.Antar), StatusPesanan.Diterima }
+            { (StatusPesanan.Dikirim, EventPesanan.Selesai), StatusPesanan.Diterima }
         };
 
     public OrderTransaction BuatTransaksi(string customerId, decimal amount)
