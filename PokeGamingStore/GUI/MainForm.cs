@@ -67,9 +67,15 @@ namespace PokeGamingStore.GUI
 
             this.pnlSidebar.BackColor = Color.FromArgb(45, 45, 48);
             this.pnlSidebar.Controls.Add(this.btnExit);
-            this.pnlSidebar.Controls.Add(this.btnUserHistory);
-            this.pnlSidebar.Controls.Add(this.btnStockManager);
-            this.pnlSidebar.Controls.Add(this.btnTransactions);
+
+
+            if (_currentUser.Role == UserRole.Admin)
+            {
+                this.pnlSidebar.Controls.Add(this.btnUserHistory);
+                this.pnlSidebar.Controls.Add(this.btnStockManager);
+                this.pnlSidebar.Controls.Add(this.btnTransactions);
+            }
+
             this.pnlSidebar.Controls.Add(this.btnCatalog);
             this.pnlSidebar.Controls.Add(this.lblLogo);
             this.pnlSidebar.Dock = DockStyle.Left;
@@ -85,24 +91,18 @@ namespace PokeGamingStore.GUI
             SetupSidebarButton(this.btnCatalog, "Katalog Produk", 80);
             this.btnCatalog.Click += (s, e) => SwitchPage(new CatalogForm(cart, stockManager, transactionService));
 
-            SetupSidebarButton(this.btnTransactions, "Manajemen Transaksi", 135);
-            this.btnTransactions.Click += (s, e) => SwitchPage(new TransactionManagementForm(transactionService));
-
-            SetupSidebarButton(this.btnStockManager, "Gudang && Admin", 190);
-            this.btnStockManager.Click += (s, e) =>
+            if (_currentUser.Role == UserRole.Admin)
             {
-                if (_currentUser.Role == UserRole.Admin)
-                {
-                    SwitchPage(new StockManagerForm(stockManager));
-                }
-                else
-                {
-                    MessageBox.Show("Anda bukan admin.", "Akses Ditolak", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                }
-            };
+                SetupSidebarButton(this.btnTransactions, "Manajemen Transaksi", 135);
+                this.btnTransactions.Click += (s, e) => SwitchPage(new TransactionManagementForm(transactionService));
 
-            SetupSidebarButton(this.btnUserHistory, "Manajemen User && Histori", 245);
-            this.btnUserHistory.Click += (s, e) => SwitchPage(new UserHistoryForm());
+                SetupSidebarButton(this.btnStockManager, "Gudang && Admin", 190);
+                this.btnStockManager.Click += (s, e) => SwitchPage(new StockManagerForm(stockManager));
+
+                SetupSidebarButton(this.btnUserHistory, "Manajemen User && Histori", 245);
+                this.btnUserHistory.Click += (s, e) => SwitchPage(new UserHistoryForm());
+            }
+
 
             SetupSidebarButton(this.btnExit, "Keluar Aplikasi", 580);
             this.btnExit.BackColor = Color.FromArgb(211, 47, 47);
