@@ -1,4 +1,5 @@
-﻿using System.Drawing;
+﻿using System;
+using System.Drawing;
 using System.Windows.Forms;
 using PokeGamingStore.Catalog;
 
@@ -6,12 +7,15 @@ namespace PokeGamingStore.GUI
 {
     public class ProductCard : UserControl
     {
+        // Event ini akan ditangkap oleh CatalogForm saat tombol ditekan
+        public event EventHandler AddToCartClicked;
+        public event EventHandler BuyNowClicked;
+
         public ProductCard(Product p)
         {
-            this.Size = new Size(200, 165);
+            this.Size = new Size(200, 190);
             this.BackColor = Color.White;
             this.Margin = new Padding(6);
-            this.Cursor = Cursors.Hand;
             this.BorderStyle = BorderStyle.FixedSingle;
 
             var lblCat = new Label
@@ -50,32 +54,42 @@ namespace PokeGamingStore.GUI
             var pnlBot = new Panel
             {
                 Dock = DockStyle.Bottom,
-                Height = 34,
+                Height = 65,
                 BackColor = Color.White
             };
 
             var lblId = new Label
             {
                 Text = p.Id ?? "",
-                Location = new Point(10, 10),
+                Location = new Point(10, 5),
                 AutoSize = true,
                 Font = new Font("Segoe UI", 7.5f),
                 ForeColor = Color.Gray
             };
 
-            var btnBuy = new Button
+            var btnCart = new Button
             {
-                Text = "+ Beli",
-                Size = new Size(58, 24),
-                Location = new Point(122, 5),
+                Text = "+ Keranjang",
+                Size = new Size(85, 26),
+                Location = new Point(10, 30),
                 FlatStyle = FlatStyle.Standard,
                 Font = new Font("Segoe UI", 8f),
                 Cursor = Cursors.Hand
             };
-            btnBuy.Click += (s, e) =>
-                MessageBox.Show($"{p.Name} ditambahkan ke keranjang!");
+            btnCart.Click += (s, e) => AddToCartClicked?.Invoke(this, EventArgs.Empty);
 
-            pnlBot.Controls.AddRange(new Control[] { lblId, btnBuy });
+            var btnBuyNow = new Button
+            {
+                Text = "+ Beli",
+                Size = new Size(88, 26),
+                Location = new Point(100, 30),
+                FlatStyle = FlatStyle.Standard,
+                Font = new Font("Segoe UI", 8f),
+                Cursor = Cursors.Hand
+            };
+            btnBuyNow.Click += (s, e) => BuyNowClicked?.Invoke(this, EventArgs.Empty);
+
+            pnlBot.Controls.AddRange(new Control[] { lblId, btnCart, btnBuyNow });
 
             this.Controls.Add(pnlBot);
             this.Controls.Add(lblPrice);

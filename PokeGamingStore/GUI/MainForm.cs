@@ -152,7 +152,8 @@ namespace PokeGamingStore.GUI
             childForm.TopLevel = false;
             childForm.FormBorderStyle = FormBorderStyle.None;
             childForm.Dock = DockStyle.Fill;
-            AddBackButtonToChild(childForm);
+            // ini direvisi bapaknya suruh hapus (susah nyarinya ternyata di mainform :v)
+            // AddBackButtonToChild(childForm);
             pnlMainContainer.Controls.Add(childForm);
             childForm.Show();
         }
