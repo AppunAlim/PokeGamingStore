@@ -5,6 +5,6 @@ public enum EventPesanan
     Bayar,
     Kemas,
     Kirim,
-    Antar,
+    Selesai,
     Batal
 }
