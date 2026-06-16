@@ -16,7 +16,6 @@ namespace PokeGamingStore.GUI
 
         private Panel pnlHeader;
         private Label lblTitle;
-        private ComboBox cmbSearchCriteria;
         private TextBox txtSearch;
         private Button btnSearch;
         private Button btnShowAll;
@@ -40,7 +39,6 @@ namespace PokeGamingStore.GUI
         {
             this.pnlHeader = new Panel();
             this.lblTitle = new Label();
-            this.cmbSearchCriteria = new ComboBox();
             this.txtSearch = new TextBox();
             this.btnSearch = new Button();
             this.btnShowAll = new Button();
@@ -54,7 +52,6 @@ namespace PokeGamingStore.GUI
             // pnlHeader
             this.pnlHeader.BackColor = Color.FromArgb(76, 175, 80);
             this.pnlHeader.Controls.Add(this.lblTitle);
-            this.pnlHeader.Controls.Add(this.cmbSearchCriteria);
             this.pnlHeader.Controls.Add(this.txtSearch);
             this.pnlHeader.Controls.Add(this.btnSearch);
             this.pnlHeader.Controls.Add(this.btnShowAll);
@@ -71,17 +68,9 @@ namespace PokeGamingStore.GUI
             this.lblTitle.Location = new Point(15, 16);
             this.lblTitle.Text = "Katalog Produk";
 
-            // cmbSearchCriteria
-            this.cmbSearchCriteria.DropDownStyle = ComboBoxStyle.DropDownList;
-            this.cmbSearchCriteria.FormattingEnabled = true;
-            this.cmbSearchCriteria.Items.AddRange(new object[] { "Name", "Category", "Id" });
-            this.cmbSearchCriteria.Location = new Point(180, 18);
-            this.cmbSearchCriteria.Size = new Size(90, 23);
-            this.cmbSearchCriteria.SelectedIndex = 0;
-
-            // txtSearch
-            this.txtSearch.Location = new Point(280, 18);
-            this.txtSearch.Size = new Size(250, 23);
+            // txtSearch 
+            this.txtSearch.Location = new Point(180, 18);
+            this.txtSearch.Size = new Size(350, 23);
             this.txtSearch.KeyDown += (s, e) =>
             {
                 if (e.KeyCode == Keys.Enter)
@@ -99,25 +88,18 @@ namespace PokeGamingStore.GUI
             this.btnSearch.Click += (s, e) => HandleSearch();
 
             // btnShowAll
-            this.btnShowAll.Location = new Point(615, 17);
-            this.btnShowAll.Size = new Size(70, 25);
-            this.btnShowAll.Text = "Semua";
+            this.btnShowAll.Location = new Point(620, 17);
+            this.btnShowAll.Size = new Size(160, 25);
+            this.btnShowAll.Text = "Tampilkan Semua Produk";
             this.btnShowAll.UseVisualStyleBackColor = true;
             this.btnShowAll.Click += (s, e) => ShowAll();
 
             // btnOpenCart
-            this.btnOpenCart.Location = new Point(700, 17);
+            this.btnOpenCart.Location = new Point(790, 17);
             this.btnOpenCart.Size = new Size(40, 25);
             this.btnOpenCart.Text = "🛒";
             this.btnOpenCart.UseVisualStyleBackColor = true;
-            this.btnOpenCart.Click += (s, e) =>
-            {
-                using (var cartForm = new CartForm(_cart, _stockManager, _transactionService))
-                {
-                    cartForm.ShowDialog();
-                }
-                ShowAll();
-            };
+            this.btnOpenCart.Click += (s, e) => OpenCart();
 
             // flpCards
             this.flpCards.AutoScroll = true;
@@ -190,7 +172,6 @@ namespace PokeGamingStore.GUI
 
         private void HandleSearch()
         {
-            string searchField = cmbSearchCriteria.SelectedItem?.ToString();
             string rawKeyword = txtSearch.Text;
 
             if (string.IsNullOrWhiteSpace(rawKeyword))
@@ -214,20 +195,19 @@ namespace PokeGamingStore.GUI
 
                 foreach (var product in sourceList)
                 {
-                    bool isMatched = false;
-                    if (searchField.Equals("Name", StringComparison.OrdinalIgnoreCase))
-                        isMatched = product.Name != null && product.Name.Contains(safeKeyword, StringComparison.OrdinalIgnoreCase);
-                    else if (searchField.Equals("Category", StringComparison.OrdinalIgnoreCase))
-                        isMatched = product.Category != null && product.Category.Equals(safeKeyword, StringComparison.OrdinalIgnoreCase);
-                    else if (searchField.Equals("Id", StringComparison.OrdinalIgnoreCase))
-                        isMatched = product.Id != null && product.Id.Equals(safeKeyword, StringComparison.OrdinalIgnoreCase);
+                    bool matchName = product.Name != null && product.Name.Contains(safeKeyword, StringComparison.OrdinalIgnoreCase);
+                    bool matchCategory = product.Category != null && product.Category.Contains(safeKeyword, StringComparison.OrdinalIgnoreCase);
+                    bool matchId = product.Id != null && product.Id.Contains(safeKeyword, StringComparison.OrdinalIgnoreCase);
 
-                    if (isMatched) searchResults.Add(product);
+                    if (matchName || matchCategory || matchId)
+                    {
+                        searchResults.Add(product);
+                    }
                 }
 
                 if (searchResults.Count == 0)
                 {
-                    MessageBox.Show($"Produk dengan {searchField} '{rawKeyword}' tidak ditemukan.", "Hasil Tidak Ditemukan", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    MessageBox.Show($"Produk dengan kata kunci '{rawKeyword}' tidak ditemukan.", "Hasil Tidak Ditemukan", MessageBoxButtons.OK, MessageBoxIcon.Information);
                     ShowAll();
                     return;
                 }
@@ -253,58 +233,62 @@ namespace PokeGamingStore.GUI
             {
                 var card = new ProductCard(p);
 
-                Action handleBuyAction = () =>
-                {
-                    if (_cart == null || _stockManager == null)
-                    {
-                        MessageBox.Show("Sistem keranjang belanja belum siap.", "Info", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                        return;
-                    }
+                card.AddToCartClicked += (s, e) => AddProductToCart(p);
+                card.BuyNowClicked += (s, e) => BuyProductNow(p);
 
-                    try
-                    {
-                        Item targetItem = _stockManager.GetItem(p.Id);
-
-                        if (targetItem == null)
-                        {
-                            targetItem = new Item { Id = p.Id, Name = p.Name, Price = p.Price };
-                            _stockManager.AddCatalogItem(targetItem, 10);
-                        }
-
-                        _cart.AddToCart(targetItem, 1);
-                        MessageBox.Show($"{p.Name} berhasil ditambahkan ke keranjang!", "Sukses", MessageBoxButtons.OK, MessageBoxIcon.Information);
-
-                        lblStatus.Text = $"Berhasil menambahkan '{p.Name}' ke keranjang.";
-                        lblStatus.ForeColor = Color.Green;
-
-                        ShowAll();
-                    }
-                    catch (Exception ex)
-                    {
-                        MessageBox.Show(ex.Message, "Gagal Menambah", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                    }
-                };
-
-                card.Click += (s, e) => handleBuyAction();
-
-                Action<Control> activateClickRecursive = null;
-                activateClickRecursive = (parent) =>
-                {
-                    foreach (Control child in parent.Controls)
-                    {
-                        child.Click += (s, e) => handleBuyAction();
-                        if (child.Controls.Count > 0)
-                        {
-                            activateClickRecursive(child);
-                        }
-                    }
-                };
-
-                activateClickRecursive(card);
                 flpCards.Controls.Add(card);
             }
             lblStatus.Text = $"Menampilkan {list.Count} produk";
             lblStatus.ForeColor = Color.DimGray;
+        }
+
+        private bool AddProductToCart(Product p)
+        {
+            if (_cart == null || _stockManager == null)
+            {
+                MessageBox.Show("Sistem keranjang belanja belum siap.", "Info", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                return false;
+            }
+
+            try
+            {
+                Item targetItem = _stockManager.GetItem(p.Id);
+
+                if (targetItem == null)
+                {
+                    targetItem = new Item { Id = p.Id, Name = p.Name, Price = p.Price };
+                    _stockManager.AddCatalogItem(targetItem, 10);
+                }
+
+                _cart.AddToCart(targetItem, 1);
+
+                lblStatus.Text = $"Berhasil menambahkan '{p.Name}' ke keranjang.";
+                lblStatus.ForeColor = Color.Green;
+
+                return true;
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message, "Gagal Menambah", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return false;
+            }
+        }
+
+        private void BuyProductNow(Product p)
+        {
+            if (AddProductToCart(p))
+            {
+                OpenCart();
+            }
+        }
+
+        private void OpenCart()
+        {
+            using (var cartForm = new CartForm(_cart, _stockManager, _transactionService))
+            {
+                cartForm.ShowDialog();
+            }
+            ShowAll();
         }
     }
 }
