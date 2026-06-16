@@ -23,20 +23,26 @@ namespace PokeGamingStore.GUI
         private Button btnTransactions;
         private Button btnStockManager;
         private Button btnUserHistory;
-        private Button btnExit;
+        private Button btnLogout; 
 
-        public MainForm(User loggedInUser)
+        private Form currentChildForm;
+        private Form _loginFormParent; 
+
+        public MainForm(User loggedInUser, ITransactionService sharedTransactionService, Form loginFormParent)
         {
             LoggedInUser = loggedInUser;
             _currentUser = loggedInUser;
+            _loginFormParent = loginFormParent;
 
             stockManager = new StockManager();
             cart = new Cart(stockManager, 10);
-            transactionService = new TransactionService();
+
+            transactionService = sharedTransactionService ?? new TransactionService();
 
             LoadInitialData();
             InitializeComponents();
-            ShowWelcomePage();
+
+            SwitchPage(new CatalogForm(cart, stockManager, transactionService));
         }
 
         private void LoadInitialData()
@@ -56,7 +62,7 @@ namespace PokeGamingStore.GUI
             this.btnTransactions = new Button();
             this.btnStockManager = new Button();
             this.btnUserHistory = new Button();
-            this.btnExit = new Button();
+            this.btnLogout = new Button();
 
             this.SuspendLayout();
 
@@ -66,8 +72,7 @@ namespace PokeGamingStore.GUI
             this.Text = "PokeGamingStore - Management Dashboard";
 
             this.pnlSidebar.BackColor = Color.FromArgb(45, 45, 48);
-            this.pnlSidebar.Controls.Add(this.btnExit);
-
+            this.pnlSidebar.Controls.Add(this.btnLogout);
 
             if (_currentUser.Role == UserRole.Admin)
             {
@@ -103,10 +108,9 @@ namespace PokeGamingStore.GUI
                 this.btnUserHistory.Click += (s, e) => SwitchPage(new UserHistoryForm());
             }
 
-
-            SetupSidebarButton(this.btnExit, "Keluar Aplikasi", 580);
-            this.btnExit.BackColor = Color.FromArgb(211, 47, 47);
-            this.btnExit.Click += (s, e) => Application.Exit();
+            SetupSidebarButton(this.btnLogout, "Logout", 580);
+            this.btnLogout.BackColor = Color.FromArgb(211, 47, 47);
+            this.btnLogout.Click += new System.EventHandler(this.BtnLogout_Click);
 
             this.pnlMainContainer.Dock = DockStyle.Fill;
             this.pnlMainContainer.BackColor = Color.FromArgb(240, 240, 240);
@@ -132,60 +136,44 @@ namespace PokeGamingStore.GUI
             btn.BackColor = Color.FromArgb(63, 63, 65);
         }
 
-        private void ShowWelcomePage()
-        {
-            pnlMainContainer.Controls.Clear();
-            Label lblWelcome = new Label
-            {
-                Text = $"Selamat Datang di PokeGamingStore Panel, {_currentUser.Username}!\n\nHak Akses: {_currentUser.Role}\nSilakan pilih menu di samping.",
-                Font = new Font("Segoe UI", 14f),
-                ForeColor = Color.DimGray,
-                Dock = DockStyle.Fill,
-                TextAlign = ContentAlignment.MiddleCenter
-            };
-            pnlMainContainer.Controls.Add(lblWelcome);
-        }
-
         private void SwitchPage(Form childForm)
         {
             pnlMainContainer.Controls.Clear();
+            currentChildForm = childForm;
             childForm.TopLevel = false;
             childForm.FormBorderStyle = FormBorderStyle.None;
             childForm.Dock = DockStyle.Fill;
-            // ini direvisi bapaknya suruh hapus (susah nyarinya ternyata di mainform :v)
-            // AddBackButtonToChild(childForm);
             pnlMainContainer.Controls.Add(childForm);
             childForm.Show();
         }
 
-        private void AddBackButtonToChild(Form childForm)
+
+        private void BtnLogout_Click(object sender, EventArgs e)
         {
-            Control header = null;
-            foreach (Control c in childForm.Controls)
+            DialogResult result = MessageBox.Show("Apakah Anda yakin ingin keluar?", "Konfirmasi Logout", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
+            if (result == DialogResult.Yes)
             {
-                if (c is Panel && (c.Name == "pnlHeader" || c.Height <= 70))
-                {
-                    header = c;
-                    break;
-                }
+                this.Hide(); 
+                _loginFormParent.Show(); 
             }
-            if (header != null)
+        }
+
+        protected override void OnFormClosing(FormClosingEventArgs e)
+        {
+            base.OnFormClosing(e);
+
+            if (e.CloseReason == CloseReason.UserClosing)
             {
-                Button btnBack = new Button
+                DialogResult result = MessageBox.Show("Apakah Anda yakin ingin menutup dan keluar dari aplikasi?", "Konfirmasi Keluar",MessageBoxButtons.YesNo,MessageBoxIcon.Question);
+
+                if (result == DialogResult.Yes)
                 {
-                    Text = "Kembali",
-                    Font = new Font("Segoe UI", 9f, FontStyle.Bold),
-                    BackColor = Color.White,
-                    ForeColor = Color.Black,
-                    Location = new Point(header.Width - 120, (header.Height / 2) - 15),
-                    Size = new Size(100, 30),
-                    FlatStyle = FlatStyle.Flat
-                };
-                btnBack.FlatAppearance.BorderSize = 0;
-                btnBack.Anchor = AnchorStyles.Top | AnchorStyles.Right;
-                btnBack.Click += (s, e) => ShowWelcomePage();
-                header.Controls.Add(btnBack);
-                btnBack.BringToFront();
+                    Application.Exit();
+                }
+                else
+                {
+                    e.Cancel = true;
+                }
             }
         }
     }
