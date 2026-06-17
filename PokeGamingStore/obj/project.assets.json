@@ -1130,23 +1130,23 @@
     ]
   },
   "packageFolders": {
-    "C:\\Users\\teste\\.nuget\\packages\\": {},
+    "C:\\Users\\AFFAN SALIM\\.nuget\\packages\\": {},
     "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages": {}
   },
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Users\\teste\\source\\repos\\TUBESKPL FINAL\\PokeGamingStore\\PokeGamingStore\\PokeGamingStore.csproj",
+      "projectUniqueName": "C:\\AffanPunya\\Tugas Kuliah\\Semester 4\\Codingan\\C#\\PokeGamingStore\\PokeGamingStore\\PokeGamingStore.csproj",
       "projectName": "PokeGamingStore",
-      "projectPath": "C:\\Users\\teste\\source\\repos\\TUBESKPL FINAL\\PokeGamingStore\\PokeGamingStore\\PokeGamingStore.csproj",
-      "packagesPath": "C:\\Users\\teste\\.nuget\\packages\\",
-      "outputPath": "C:\\Users\\teste\\source\\repos\\TUBESKPL FINAL\\PokeGamingStore\\PokeGamingStore\\obj\\",
+      "projectPath": "C:\\AffanPunya\\Tugas Kuliah\\Semester 4\\Codingan\\C#\\PokeGamingStore\\PokeGamingStore\\PokeGamingStore.csproj",
+      "packagesPath": "C:\\Users\\AFFAN SALIM\\.nuget\\packages\\",
+      "outputPath": "C:\\AffanPunya\\Tugas Kuliah\\Semester 4\\Codingan\\C#\\PokeGamingStore\\PokeGamingStore\\obj\\",
       "projectStyle": "PackageReference",
       "fallbackFolders": [
         "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
       ],
       "configFilePaths": [
-        "C:\\Users\\teste\\AppData\\Roaming\\NuGet\\NuGet.Config",
+        "C:\\Users\\AFFAN SALIM\\AppData\\Roaming\\NuGet\\NuGet.Config",
         "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
         "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
       ],
@@ -1207,7 +1207,7 @@
             "privateAssets": "none"
           }
         },
-        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\10.0.200-preview.0.26103.119/PortableRuntimeIdentifierGraph.json",
+        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\10.0.201/PortableRuntimeIdentifierGraph.json",
         "packagesToPrune": {
           "Microsoft.CSharp": "(,4.7.32767]",
           "Microsoft.VisualBasic": "(,10.4.32767]",
