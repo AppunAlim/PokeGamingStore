@@ -11,9 +11,12 @@ namespace PokeGamingStore
         {
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
+            PokeGamingStore.Performance.CartPerformanceTester.RunTest();
 
             // Langsung jalankan wadah utama GUI, tidak memakai CMD lagi
             Application.Run(new LoginForm());
+
+
         }
     }
 }
