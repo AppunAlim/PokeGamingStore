@@ -5,7 +5,6 @@ using System.Data;
 using System.Drawing;
 using System.Windows.Forms;
 using Microsoft.VisualBasic;
-
 namespace PokeGamingStore.GUI
 {
     internal class TransactionManagementForm : Form
@@ -163,10 +162,12 @@ namespace PokeGamingStore.GUI
             var orders = _transactionService.AmbilSemua();
             foreach (var order in orders)
             {
+                string shortOrderId = "ORD-" + order.Id.ToString().Substring(0, 8).ToUpper();
                 dt.Rows.Add(order.Id, order.CustomerId, order.Amount, order.Status);
             }
 
             dgvTransactions.DataSource = dt;
+            dgvTransactions.Columns["ID Pesanan"].Visible = false;
             dgvTransactions.Columns["Total Bayar"].DefaultCellStyle.Format = "Rp#,0";
         }
 

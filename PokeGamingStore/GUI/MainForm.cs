@@ -23,10 +23,10 @@ namespace PokeGamingStore.GUI
         private Button btnTransactions;
         private Button btnStockManager;
         private Button btnUserHistory;
-        private Button btnLogout; 
+        private Button btnLogout;
 
         private Form currentChildForm;
-        private Form _loginFormParent; 
+        private Form _loginFormParent;
 
         public MainForm(User loggedInUser, ITransactionService sharedTransactionService, Form loginFormParent)
         {
@@ -73,10 +73,10 @@ namespace PokeGamingStore.GUI
 
             this.pnlSidebar.BackColor = Color.FromArgb(45, 45, 48);
             this.pnlSidebar.Controls.Add(this.btnLogout);
+            this.pnlSidebar.Controls.Add(this.btnUserHistory);
 
             if (_currentUser.Role == UserRole.Admin)
             {
-                this.pnlSidebar.Controls.Add(this.btnUserHistory);
                 this.pnlSidebar.Controls.Add(this.btnStockManager);
                 this.pnlSidebar.Controls.Add(this.btnTransactions);
             }
@@ -93,6 +93,7 @@ namespace PokeGamingStore.GUI
             this.lblLogo.Text = "PokeGamingStore";
             this.lblLogo.TextAlign = ContentAlignment.MiddleCenter;
 
+            // Setup Katalog (Muncul untuk semua)
             SetupSidebarButton(this.btnCatalog, "Katalog Produk", 80);
             this.btnCatalog.Click += (s, e) => SwitchPage(new CatalogForm(cart, stockManager, transactionService));
 
@@ -105,8 +106,13 @@ namespace PokeGamingStore.GUI
                 this.btnStockManager.Click += (s, e) => SwitchPage(new StockManagerForm(stockManager));
 
                 SetupSidebarButton(this.btnUserHistory, "Manajemen User && Histori", 245);
-                this.btnUserHistory.Click += (s, e) => SwitchPage(new UserHistoryForm());
             }
+            else
+            {
+                SetupSidebarButton(this.btnUserHistory, "Manajemen User && Histori", 135);
+            }
+
+            this.btnUserHistory.Click += (s, e) => SwitchPage(new UserHistoryForm());
 
             SetupSidebarButton(this.btnLogout, "Logout", 580);
             this.btnLogout.BackColor = Color.FromArgb(211, 47, 47);
@@ -147,14 +153,13 @@ namespace PokeGamingStore.GUI
             childForm.Show();
         }
 
-
         private void BtnLogout_Click(object sender, EventArgs e)
         {
             DialogResult result = MessageBox.Show("Apakah Anda yakin ingin keluar?", "Konfirmasi Logout", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
             if (result == DialogResult.Yes)
             {
-                this.Hide(); 
-                _loginFormParent.Show(); 
+                this.Hide();
+                _loginFormParent.Show();
             }
         }
 
@@ -164,7 +169,7 @@ namespace PokeGamingStore.GUI
 
             if (e.CloseReason == CloseReason.UserClosing)
             {
-                DialogResult result = MessageBox.Show("Apakah Anda yakin ingin menutup dan keluar dari aplikasi?", "Konfirmasi Keluar",MessageBoxButtons.YesNo,MessageBoxIcon.Question);
+                DialogResult result = MessageBox.Show("Apakah Anda yakin ingin menutup dan keluar dari aplikasi?", "Konfirmasi Keluar", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
 
                 if (result == DialogResult.Yes)
                 {

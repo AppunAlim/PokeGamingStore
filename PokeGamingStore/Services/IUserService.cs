@@ -14,7 +14,9 @@ namespace PokeGamingStore.Services
 
         User ValidateLogin(string username, string password, UserRole role);
         bool RegisterUserWithPassword(string username, string password, UserRole role);
+        bool ChangePassword(string userId, string newPassword);
         List<History<PurchaseInfo>> GetAllHistory();
         List<History<PurchaseInfo>> SearchHistory(string query);
+
     }
 }

@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
+using System.IO;          
 using System.Linq;
+using System.Text.Json;   
 using PokeGamingStore.Models;
 
 namespace PokeGamingStore.Services
@@ -9,6 +11,52 @@ namespace PokeGamingStore.Services
     {
         private static readonly IGenericRepository<User> _userRepo = new GenericRepository<User>();
         private static readonly IGenericRepository<History<PurchaseInfo>> _historyRepo = new GenericRepository<History<PurchaseInfo>>();
+
+        //Konfigurasi path file JSON untuk menyimpan data user dan histori 
+        private static readonly string UserDbPath = "users_db.json";
+        private static readonly string HistoryDbPath = "history_db.json";
+
+        // Constructor statis untuk memuat data dari disk saat pertama kali kelas ini digunakan
+        static UserService()
+        {
+            LoadDataFromDisk();
+            EnsureAdminExists();
+        }
+
+        private static void LoadDataFromDisk()
+        {
+            try
+            {
+                if (File.Exists(UserDbPath))
+                {
+                    var users = JsonSerializer.Deserialize<List<User>>(File.ReadAllText(UserDbPath));
+                    if (users != null) foreach (var u in users) _userRepo.Add(u);
+                }
+
+                if (File.Exists(HistoryDbPath))
+                {
+                    var histories = JsonSerializer.Deserialize<List<History<PurchaseInfo>>>(File.ReadAllText(HistoryDbPath));
+                    if (histories != null) foreach (var h in histories) _historyRepo.Add(h);
+                }
+            }
+            catch { /* Abaikan error parsing saat file kosong pertama kali */ }
+        }
+
+        private static void SaveDataToDisk()
+        {
+            var options = new JsonSerializerOptions { WriteIndented = true };
+            File.WriteAllText(UserDbPath, JsonSerializer.Serialize(_userRepo.GetAll(), options));
+            File.WriteAllText(HistoryDbPath, JsonSerializer.Serialize(_historyRepo.GetAll(), options));
+        }
+
+        private static void EnsureAdminExists()
+        {
+            if (!_userRepo.GetAll().Any(u => u.Role == UserRole.Admin))
+            {
+                _userRepo.Add(new User { Id = "USR-ADMIN", CustomerId = null, Username = "Admin", Password = "admin123", Role = UserRole.Admin });
+                SaveDataToDisk();
+            }
+        }
 
         public User ValidateLogin(string username, string password, UserRole role)
         {
@@ -37,7 +85,21 @@ namespace PokeGamingStore.Services
             };
 
             _userRepo.Add(user);
+            SaveDataToDisk(); // simpan permanen ke disk
             return true;
+        }
+
+        // ubah password user berdasarkan userId, jika userId tidak ditemukan maka return false
+        public bool ChangePassword(string userId, string newPassword)
+        {
+            var user = _userRepo.GetAll().FirstOrDefault(u => u.Id == userId);
+            if (user != null)
+            {
+                user.Password = newPassword;
+                SaveDataToDisk(); // Simpan perubahan ke disk
+                return true;
+            }
+            return false;
         }
 
         public List<History<PurchaseInfo>> GetAllHistory() => _historyRepo.GetAll();
@@ -68,6 +130,7 @@ namespace PokeGamingStore.Services
                 CustomerId = (role == UserRole.Regular) ? "CUST-" + custSuffix : null
             };
             _userRepo.Add(user);
+            SaveDataToDisk(); // simpan permanen ke disk
             return new ApiResponse<User> { Success = true, Message = "User berhasil terdaftar.", Data = user };
         }
 
@@ -86,6 +149,7 @@ namespace PokeGamingStore.Services
                 Timestamp = DateTime.Now,
                 Data = new PurchaseInfo { OrderId = orderId, TotalAmount = amount }
             });
+            SaveDataToDisk(); 
         }
 
         public ApiResponse<List<History<PurchaseInfo>>> GetPurchaseHistory(string customerId)

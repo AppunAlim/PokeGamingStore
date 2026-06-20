@@ -3,7 +3,7 @@ namespace PokeGamingStore.Models;
 public sealed class OrderTransaction
 {
     public Guid Id { get; }
-    public string CustomerId { get; }
+    public string CustomerId { get; set; }
     public decimal Amount { get; }
     public StatusPesanan Status { get; private set; }
     public DateTime CreatedAtUtc { get; }

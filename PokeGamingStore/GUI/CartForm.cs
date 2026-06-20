@@ -1,7 +1,8 @@
-﻿using System;
+﻿using PokeGamingStore.Models;
+using PokeGamingStore.Services;
+using System;
 using System.Data;
 using System.Windows.Forms;
-using PokeGamingStore.Services;
 
 namespace PokeGamingStore.GUI
 {
@@ -230,6 +231,19 @@ namespace PokeGamingStore.GUI
 
             if (paymentForm.ShowDialog() == DialogResult.OK)
             {
+                var pesananTerakhir = System.Linq.Enumerable.LastOrDefault(_transactionService.AmbilSemua(), p => p.CustomerId == pelangganId.ToString());
+
+                if (pesananTerakhir != null)
+                {
+                    _transactionService.TerapkanEvent(pesananTerakhir.Id, EventPesanan.Bayar);
+
+                    if (MainForm.LoggedInUser != null && MainForm.LoggedInUser.CustomerId != null)
+                    {
+                        pesananTerakhir.CustomerId = MainForm.LoggedInUser.CustomerId;
+                        new UserService().RecordPurchase(MainForm.LoggedInUser.CustomerId, pesananTerakhir.Id.ToString(), checkoutTotal);
+                    }
+                }
+
                 foreach (DataRow checkedRow in dtCheckedItems.Rows)
                 {
                     string checkedProductId = checkedRow["ID Produk"].ToString();
